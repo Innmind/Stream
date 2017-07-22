@@ -12,7 +12,6 @@ use Innmind\Stream\{
     Exception\UnknownSize,
     Exception\FailedToCloseStream
 };
-use Innmind\Immutable\Str;
 
 final class Stream implements StreamInterface
 {

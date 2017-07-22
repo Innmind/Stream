@@ -37,9 +37,13 @@ class SelectTest extends TestCase
 
     public function tearDown()
     {
-        $this->server->processes()->kill($this->read->pid(), Signal::kill());
-        $this->server->processes()->kill($this->write->pid(), Signal::kill());
-        $this->server->processes()->kill($this->oob->pid(), Signal::kill());
+        try {
+            $this->server->processes()->kill($this->read->pid(), Signal::kill());
+            $this->server->processes()->kill($this->write->pid(), Signal::kill());
+            $this->server->processes()->kill($this->oob->pid(), Signal::kill());
+        } catch (\Throwable $e) {
+            //pass
+        }
     }
 
     public function testForRead()

@@ -33,35 +33,35 @@ final class Size
             case $value < self::KILOBYTES:
                 $this->string = sprintf(
                     '%sKB',
-                    round($value/self::BYTES, 3)
+                    round($value / self::BYTES, 3)
                 );
                 break;
 
             case $value < self::MEGABYTES:
                 $this->string = sprintf(
                     '%sMB',
-                    round($value/self::KILOBYTES, 3)
+                    round($value / self::KILOBYTES, 3)
                 );
                 break;
 
             case $value < self::GIGABYTES:
                 $this->string = sprintf(
                     '%sGB',
-                    round($value/self::MEGABYTES, 3)
+                    round($value / self::MEGABYTES, 3)
                 );
                 break;
 
             case $value < self::TERABYTES:
                 $this->string = sprintf(
                     '%sTB',
-                    round($value/self::GIGABYTES, 3)
+                    round($value / self::GIGABYTES, 3)
                 );
                 break;
 
             case $value < self::PETABYTES:
                 $this->string = sprintf(
                     '%sPB',
-                    round($value/self::TERABYTES, 3)
+                    round($value / self::TERABYTES, 3)
                 );
                 break;
         }

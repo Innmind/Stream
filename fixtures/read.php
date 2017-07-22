@@ -7,7 +7,7 @@ $socket = stream_socket_server('unix:///tmp/read.sock');
 while (true) {
     $client = stream_socket_accept($socket);
 
-    while(!feof($client)) {
+    while (!feof($client)) {
         fwrite($client, 'foo');
     }
 }

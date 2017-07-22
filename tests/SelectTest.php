@@ -157,4 +157,45 @@ class SelectTest extends TestCase
         $this->assertCount(1, $streams->get('write'));
         $this->assertCount(1, $streams->get('out_of_band'));
     }
+
+    public function testUnwatch()
+    {
+        $read = $this->createMock(Selectable::class);
+        $read
+            ->expects($this->exactly(2))
+            ->method('resource')
+            ->willReturn($readSocket = stream_socket_client('unix:///tmp/read.sock'));
+        $write = $this->createMock(Selectable::class);
+        $write
+            ->expects($this->exactly(2))
+            ->method('resource')
+            ->willReturn($writeSocket = stream_socket_client('unix:///tmp/write.sock'));
+        $outOfBand = $this->createMock(Selectable::class);
+        $outOfBand
+            ->expects($this->exactly(2))
+            ->method('resource')
+            ->willReturn($oobSocket = stream_socket_client('tcp://127.0.0.1:1234'));
+        $select = (new Select(new ElapsedPeriod(0)))
+            ->forRead($read)
+            ->forWrite($write)
+            ->forOutOfBand($outOfBand);
+        fwrite($readSocket, 'foo');
+        fwrite($writeSocket, 'foo');
+        stream_socket_sendto($oobSocket, 'foo', STREAM_OOB);
+
+        $select();
+        $select2 = $select
+            ->unwatch($read)
+            ->unwatch($write)
+            ->unwatch($outOfBand);
+
+        $this->assertInstanceOf(Select::class, $select);
+        $this->assertNotSame($select2, $select);
+
+        $streams = $select2();
+
+        $this->assertCount(0, $streams->get('read'));
+        $this->assertCount(0, $streams->get('write'));
+        $this->assertCount(0, $streams->get('out_of_band'));
+    }
 }

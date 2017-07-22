@@ -1,0 +1,108 @@
+<?php
+declare(strict_types = 1);
+
+namespace Innmind\Stream\Readable;
+
+use Innmind\Stream\{
+    Stream as StreamInterface,
+    Readable,
+    Selectable,
+    Stream\Position,
+    Stream\Size,
+    Stream\Position\Mode,
+    Exception\NonBlockingModeNotSupported
+};
+use Innmind\Immutable\Str;
+
+final class NonBlocking implements Readable, Selectable
+{
+    private $stream;
+
+    public function __construct(Selectable $selectable)
+    {
+        $resource = $selectable->resource();
+        $return = stream_set_blocking($resource, false);
+
+        if ($return === false) {
+            throw new NonBlockingModeNotSupported;
+        }
+
+        if ($selectable instanceof Readable) {
+            $this->stream = $selectable;
+        } else {
+            $this->stream = new Stream($resource);
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function resource()
+    {
+        return $this->stream->resource();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function read(int $length = null): Str
+    {
+        return $this->stream->read($length);
+    }
+
+    public function readLine(): Str
+    {
+        return $this->stream->readLine();
+    }
+
+    public function position(): Position
+    {
+        return $this->stream->position();
+    }
+
+    public function seek(Position $position, Mode $mode = null): StreamInterface
+    {
+        $this->stream->seek($position, $mode);
+
+        return $this;
+    }
+
+    public function rewind(): StreamInterface
+    {
+        $this->stream->rewind();
+
+        return $this;
+    }
+
+    public function end(): bool
+    {
+        return $this->stream->end();
+    }
+
+    public function size(): Size
+    {
+        return $this->stream->size();
+    }
+
+    public function knowsSize(): bool
+    {
+        return $this->stream->knowsSize();
+    }
+
+    public function close(): StreamInterface
+    {
+        $this->stream->close();
+
+        return $this;
+    }
+
+    public function closed(): bool
+    {
+        return $this->stream->closed();
+    }
+
+    public function __toString(): string
+    {
+        return (string) $this->stream;
+    }
+}

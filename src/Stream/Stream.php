@@ -26,7 +26,12 @@ final class Stream implements StreamInterface
         }
 
         $this->resource = $resource;
-        $this->rewind();
+        $meta = stream_get_meta_data($resource);
+
+        if ($meta['seekable']) {
+            $this->rewind();
+        }
+
         $stats = fstat($resource);
 
         if (isset($stats['size'])) {

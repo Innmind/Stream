@@ -83,6 +83,17 @@ final class Select
         return $self;
     }
 
+    public function unwatch(Selectable $stream): self
+    {
+        $resource = $stream->resource();
+        $self = clone $this;
+        $self->read = $self->read->remove($resource);
+        $self->write = $self->write->remove($resource);
+        $self->outOfBand = $self->outOfBand->remove($resource);
+
+        return $self;
+    }
+
     /**
      * @return MapInterface<string, SetInterface<Selectable>> Key can be read, write or out_of_band
      */

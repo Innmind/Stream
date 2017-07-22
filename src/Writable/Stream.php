@@ -42,7 +42,7 @@ final class Stream implements Writable, Selectable
             throw new FailedToWriteToStream;
         }
 
-        $return = fwrite($this->resource, (string) $data);
+        $return = @fwrite($this->resource, (string) $data);
 
         if ($return === false) {
             throw new FailedToWriteToStream;

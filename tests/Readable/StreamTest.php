@@ -61,6 +61,15 @@ class StreamTest extends TestCase
         $this->assertSame('', (string) $stream->read(3));
     }
 
+    public function testReadOnceClosed()
+    {
+        $resource = tmpfile();
+        fwrite($resource, 'foobarbaz');
+        $stream = new Stream($resource);
+
+        $this->assertSame('', (string) $stream->close()->read());
+    }
+
     public function testReadRemaining()
     {
         $resource = tmpfile();
@@ -86,6 +95,15 @@ class StreamTest extends TestCase
         $this->assertSame("bar\n", (string) $stream->readLine());
         $this->assertSame('baz', (string) $stream->readLine());
         $this->assertSame('', (string) $stream->readLine());
+    }
+
+    public function testReadLineOnceClosed()
+    {
+        $resource = tmpfile();
+        fwrite($resource, 'foobarbaz');
+        $stream = new Stream($resource);
+
+        $this->assertSame('', (string) $stream->close()->readLine());
     }
 
     public function testPosition()
@@ -166,5 +184,14 @@ class StreamTest extends TestCase
         $stream = new Stream($resource);
 
         $this->assertSame('foobarbaz', (string) $stream);
+    }
+
+    public function testStringCastOnceClosed()
+    {
+        $resource = tmpfile();
+        fwrite($resource, 'foobarbaz');
+        $stream = new Stream($resource);
+
+        $this->assertSame('', (string) $stream->close());
     }
 }

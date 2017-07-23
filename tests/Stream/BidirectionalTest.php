@@ -166,6 +166,15 @@ class BidirectionalTest extends TestCase
         $this->assertSame('', (string) $stream->read(3));
     }
 
+    public function testReadOnceClosed()
+    {
+        $resource = tmpfile();
+        fwrite($resource, 'foobarbaz');
+        $stream = new Bidirectional($resource);
+
+        $this->assertSame('', (string) $stream->close()->read());
+    }
+
     public function testReadRemaining()
     {
         $resource = tmpfile();

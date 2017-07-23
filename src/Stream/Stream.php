@@ -41,11 +41,21 @@ final class Stream implements StreamInterface
 
     public function position(): Position
     {
+        if ($this->closed()) {
+            return new Position(
+                $this->size ? $this->size->toInt() : 0
+            );
+        }
+
         return new Position(ftell($this->resource));
     }
 
     public function seek(Position $position, Mode $mode = null): StreamInterface
     {
+        if ($this->closed()) {
+            return $this;
+        }
+
         fseek(
             $this->resource,
             $position->toInt(),
@@ -64,6 +74,10 @@ final class Stream implements StreamInterface
 
     public function end(): bool
     {
+        if ($this->closed()) {
+            return true;
+        }
+
         return feof($this->resource);
     }
 
@@ -83,6 +97,10 @@ final class Stream implements StreamInterface
 
     public function close(): StreamInterface
     {
+        if ($this->closed()) {
+            return $this;
+        }
+
         $return = fclose($this->resource);
 
         if ($return = false) {
@@ -96,6 +114,6 @@ final class Stream implements StreamInterface
 
     public function closed(): bool
     {
-        return $this->closed;
+        return $this->closed || !is_resource($this->resource);
     }
 }

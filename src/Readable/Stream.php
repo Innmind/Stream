@@ -38,6 +38,10 @@ final class Stream implements Readable, Selectable
      */
     public function read(int $length = null): Str
     {
+        if ($this->closed()) {
+            return new Str('');
+        }
+
         return new Str((string) stream_get_contents(
             $this->resource,
             $length ?? -1
@@ -46,6 +50,10 @@ final class Stream implements Readable, Selectable
 
     public function readLine(): Str
     {
+        if ($this->closed()) {
+            return new Str('');
+        }
+
         return new Str((string) fgets($this->resource));
     }
 

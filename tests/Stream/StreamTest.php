@@ -51,6 +51,19 @@ class StreamTest extends TestCase
         $this->assertSame(0, $stream->position()->toInt());
     }
 
+    public function testPositionOnceClosed()
+    {
+        $resource = tmpfile();
+        fwrite($resource, 'foobarbaz');
+        $stream = new Stream($resource);
+
+        $this->assertSame(9, $stream->close()->position()->toInt());
+
+        $stream = new Stream(stream_socket_server('tcp://127.0.0.1:1234'));
+
+        $this->assertSame(0, $stream->close()->position()->toInt());
+    }
+
     public function testSeek()
     {
         $resource = tmpfile();
@@ -65,6 +78,16 @@ class StreamTest extends TestCase
         $this->assertSame(3, $stream->position()->toInt());
     }
 
+    public function testSeekOnceClosed()
+    {
+        $resource = tmpfile();
+        fwrite($resource, 'foobarbaz');
+
+        $stream = new Stream($resource);
+
+        $this->assertSame($stream, $stream->close()->seek(new Position(1)));
+    }
+
     public function testRewind()
     {
         $resource = tmpfile();
@@ -76,6 +99,23 @@ class StreamTest extends TestCase
         $this->assertSame(0, $stream->position()->toInt());
     }
 
+    public function testRewindOnceClosed()
+    {
+        $resource = tmpfile();
+        fwrite($resource, 'foobarbaz');
+
+        $stream = new Stream($resource);
+
+        $this->assertSame(
+            $stream,
+            $stream
+                ->seek(new Position(2))
+                ->close()
+                ->rewind()
+        );
+        $this->assertSame(9, $stream->position()->toInt());
+    }
+
     public function testEnd()
     {
         $resource = tmpfile();
@@ -85,6 +125,16 @@ class StreamTest extends TestCase
         $this->assertFalse($stream->end());
         fread($resource, 10);
         $this->assertTrue($stream->end());
+    }
+
+    public function testEndOnceClosed()
+    {
+        $resource = tmpfile();
+        fwrite($resource, 'foobarbaz');
+
+        $stream = new Stream($resource);
+
+        $this->assertTrue($stream->close()->end());
     }
 
     public function testSize()
@@ -107,5 +157,26 @@ class StreamTest extends TestCase
         $this->assertFalse($stream->closed());
         $this->assertSame($stream, $stream->close());
         $this->assertTrue($stream->closed());
+    }
+
+    public function testCloseFromOutside()
+    {
+        $resource = tmpfile();
+        fwrite($resource, 'foobarbaz');
+        $stream = new Stream($resource);
+
+        fclose($resource);
+
+        $this->assertTrue($stream->closed());
+    }
+
+    public function testCloseTwice()
+    {
+        $resource = tmpfile();
+        fwrite($resource, 'foobarbaz');
+
+        $stream = new Stream($resource);
+
+        $this->assertSame($stream, $stream->close()->close());
     }
 }

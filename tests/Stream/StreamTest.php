@@ -59,7 +59,7 @@ class StreamTest extends TestCase
 
         $this->assertSame(9, $stream->close()->position()->toInt());
 
-        $stream = new Stream(stream_socket_server('tcp://127.0.0.1:1234'));
+        $stream = new Stream(stream_socket_server('tcp://127.0.0.1:1235'));
 
         $this->assertSame(0, $stream->close()->position()->toInt());
     }

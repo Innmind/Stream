@@ -27,6 +27,9 @@ final class NonBlocking implements Readable, Selectable
             throw new NonBlockingModeNotSupported;
         }
 
+        stream_set_write_buffer($resource, 0);
+        stream_set_read_buffer($resource, 0);
+
         if ($selectable instanceof Readable) {
             $this->stream = $selectable;
         } else {

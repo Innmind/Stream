@@ -179,4 +179,16 @@ class StreamTest extends TestCase
 
         $this->assertSame($stream, $stream->close()->close());
     }
+
+    /**
+     * @expectedException Innmind\Stream\Exception\PositionNotSeekable
+     */
+    public function testThrowWhenNotSeekable()
+    {
+        $resource = fopen('php://temp', 'r+');
+        fwrite($resource, 'foobarbaz');
+
+        $stream = new Stream($resource);
+        $stream->seek(new Position(42));
+    }
 }

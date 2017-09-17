@@ -10,7 +10,8 @@ use Innmind\Stream\{
     Stream\Position\Mode,
     Exception\InvalidArgumentException,
     Exception\UnknownSize,
-    Exception\FailedToCloseStream
+    Exception\FailedToCloseStream,
+    Exception\PositionNotSeekable
 };
 
 final class Stream implements StreamInterface
@@ -56,11 +57,15 @@ final class Stream implements StreamInterface
             return $this;
         }
 
-        fseek(
+        $status = fseek(
             $this->resource,
             $position->toInt(),
             ($mode ?? Mode::fromStart())->toInt()
         );
+
+        if ($status === -1) {
+            throw new PositionNotSeekable;
+        }
 
         return $this;
     }

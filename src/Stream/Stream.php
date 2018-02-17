@@ -30,8 +30,8 @@ final class Stream implements StreamInterface
         $this->resource = $resource;
         $meta = stream_get_meta_data($resource);
 
-        if ($meta['seekable'] && $meta['uri'] !== 'php://stdin') {
-            //stdin is not seekable
+        if ($meta['seekable'] && substr($meta['uri'], 0, 9) !== 'php://std') {
+            //stdin, stdout and stderr are not seekable
             $this->seekable = true;
             $this->rewind();
         }

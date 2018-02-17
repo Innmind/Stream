@@ -205,4 +205,32 @@ class StreamTest extends TestCase
         (new Stream(fopen('php://stdin', 'rb')))
             ->seek(new Position(0));
     }
+
+    public function testDoesntTryToRewindStdout()
+    {
+        $this->assertInstanceOf(Stream::class, new Stream(fopen('php://stdout', 'rb')));
+    }
+
+    /**
+     * @expectedException Innmind\Stream\Exception\PositionNotSeekable
+     */
+    public function testThrowWhenTryingToSeekStdout()
+    {
+        (new Stream(fopen('php://stdout', 'rb')))
+            ->seek(new Position(0));
+    }
+
+    public function testDoesntTryToRewindStderr()
+    {
+        $this->assertInstanceOf(Stream::class, new Stream(fopen('php://stderr', 'rb')));
+    }
+
+    /**
+     * @expectedException Innmind\Stream\Exception\PositionNotSeekable
+     */
+    public function testThrowWhenTryingToSeekStderr()
+    {
+        (new Stream(fopen('php://stderr', 'rb')))
+            ->seek(new Position(0));
+    }
 }

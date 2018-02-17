@@ -19,6 +19,7 @@ final class Stream implements StreamInterface
     private $resource;
     private $size;
     private $closed = false;
+    private $seekable = false;
 
     public function __construct($resource)
     {
@@ -29,7 +30,9 @@ final class Stream implements StreamInterface
         $this->resource = $resource;
         $meta = stream_get_meta_data($resource);
 
-        if ($meta['seekable']) {
+        if ($meta['seekable'] && $meta['uri'] !== 'php://stdin') {
+            //stdin is not seekable
+            $this->seekable = true;
             $this->rewind();
         }
 
@@ -53,6 +56,10 @@ final class Stream implements StreamInterface
 
     public function seek(Position $position, Mode $mode = null): StreamInterface
     {
+        if (!$this->seekable) {
+            throw new PositionNotSeekable;
+        }
+
         if ($this->closed()) {
             return $this;
         }

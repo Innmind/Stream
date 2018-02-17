@@ -191,4 +191,18 @@ class StreamTest extends TestCase
         $stream = new Stream($resource);
         $stream->seek(new Position(42));
     }
+
+    public function testDoesntTryToRewindStdin()
+    {
+        $this->assertInstanceOf(Stream::class, new Stream(fopen('php://stdin', 'rb')));
+    }
+
+    /**
+     * @expectedException Innmind\Stream\Exception\PositionNotSeekable
+     */
+    public function testThrowWhenTryingToSeekStdin()
+    {
+        (new Stream(fopen('php://stdin', 'rb')))
+            ->seek(new Position(0));
+    }
 }

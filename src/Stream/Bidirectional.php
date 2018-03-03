@@ -6,15 +6,14 @@ namespace Innmind\Stream\Stream;
 use Innmind\Stream\{
     Readable,
     Writable,
+    Bidirectional as BidirectionalInterface,
     Selectable,
     Stream as StreamInterface,
-    Stream\Position,
-    Stream\Size,
     Stream\Position\Mode
 };
 use Innmind\Immutable\Str;
 
-final class Bidirectional implements Readable, Writable, Selectable
+final class Bidirectional implements BidirectionalInterface, Selectable
 {
     private $read;
     private $write;

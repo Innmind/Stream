@@ -8,6 +8,7 @@ use Innmind\Stream\{
     Stream as StreamInterface,
     Readable,
     Writable,
+    Bidirectional as BidirectionalInterface,
     Selectable,
     Stream\Position,
     Stream\Position\Mode,
@@ -25,6 +26,7 @@ class BidirectionalTest extends TestCase
 
         $this->assertInstanceOf(Readable::class, $stream);
         $this->assertInstanceOf(Writable::class, $stream);
+        $this->assertInstanceOf(BidirectionalInterface::class, $stream);
         $this->assertInstanceOf(Selectable::class, $stream);
     }
 

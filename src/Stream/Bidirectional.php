@@ -9,8 +9,6 @@ use Innmind\Stream\{
     Bidirectional as BidirectionalInterface,
     Selectable,
     Stream as StreamInterface,
-    Stream\Position,
-    Stream\Size,
     Stream\Position\Mode
 };
 use Innmind\Immutable\Str;

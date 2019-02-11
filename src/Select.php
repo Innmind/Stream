@@ -18,6 +18,9 @@ final class Select
     private $read;
     private $write;
     private $outOfBand;
+    private $readResources;
+    private $writeResources;
+    private $outOfBandResources;
 
     public function __construct(ElapsedPeriod $timeout)
     {
@@ -25,6 +28,9 @@ final class Select
         $this->read = new Map('resource', Selectable::class);
         $this->write = new Map('resource', Selectable::class);
         $this->outOfBand = new Map('resource', Selectable::class);
+        $this->readResources = [];
+        $this->writeResources = [];
+        $this->outOfBandResources = [];
     }
 
     public function forRead(Selectable $read, Selectable ...$reads): self
@@ -34,12 +40,14 @@ final class Select
             $read->resource(),
             $read
         );
+        $self->readResources[] = $read->resource();
 
         foreach ($reads as $read) {
             $self->read = $self->read->put(
                 $read->resource(),
                 $read
             );
+            $self->readResources[] = $read->resource();
         }
 
         return $self;
@@ -52,12 +60,14 @@ final class Select
             $write->resource(),
             $write
         );
+        $self->writeResources[] = $write->resource();
 
         foreach ($writes as $write) {
             $self->write = $self->write->put(
                 $write->resource(),
                 $write
             );
+            $self->writeResources[] = $write->resource();
         }
 
         return $self;
@@ -72,12 +82,14 @@ final class Select
             $outOfBand->resource(),
             $outOfBand
         );
+        $self->outOfBandResources[] = $outOfBand->resource();
 
         foreach ($outOfBands as $outOfBand) {
             $self->outOfBand = $self->outOfBand->put(
                 $outOfBand->resource(),
                 $outOfBand
             );
+            $self->outOfBandResources[] = $outOfBand->resource();
         }
 
         return $self;
@@ -90,6 +102,24 @@ final class Select
         $self->read = $self->read->remove($resource);
         $self->write = $self->write->remove($resource);
         $self->outOfBand = $self->outOfBand->remove($resource);
+        $self->readResources = \array_filter(
+            $self->readResources,
+            static function($read) use ($resource): bool {
+                return $read !== $resource;
+            }
+        );
+        $self->writeResources = \array_filter(
+            $self->writeResources,
+            static function($write) use ($resource): bool {
+                return $write !== $resource;
+            }
+        );
+        $self->outOfBandResources = \array_filter(
+            $self->outOfBandResources,
+            static function($outOfBand) use ($resource): bool {
+                return $outOfBand !== $resource;
+            }
+        );
 
         return $self;
     }
@@ -110,9 +140,9 @@ final class Select
                 ->put('out_of_band', new Set(Selectable::class));
         }
 
-        $read = $this->read->keys()->toPrimitive();
-        $write = $this->write->keys()->toPrimitive();
-        $outOfBand = $this->outOfBand->keys()->toPrimitive();
+        $read = $this->readResources;
+        $write = $this->writeResources;
+        $outOfBand = $this->outOfBandResources;
         $seconds = (int) ($this->timeout->milliseconds() / 1000);
         $microseconds = ($this->timeout->milliseconds() - ($seconds * 1000)) * 1000;
 

@@ -12,35 +12,32 @@ use Innmind\Immutable\{
     MapInterface,
     SetInterface
 };
-use Innmind\Server\Control\{
-    ServerFactory,
-    Server\Command,
-    Server\Signal
-};
+use Symfony\Component\Process\Process;
 use PHPUnit\Framework\TestCase;
 
 class SelectTest extends TestCase
 {
-    private $server;
     private $read;
     private $write;
     private $oob;
 
     public function setUp()
     {
-        $this->server = (new ServerFactory)->make();
-        $this->read = $this->server->processes()->execute((new Command('php'))->withArgument('fixtures/read.php'));
-        $this->write = $this->server->processes()->execute((new Command('php'))->withArgument('fixtures/write.php'));
-        $this->oob = $this->server->processes()->execute((new Command('php'))->withArgument('fixtures/oob.php'));
+        $this->read = new Process(['php', 'fixtures/read.php']);
+        $this->write = new Process(['php', 'fixtures/write.php']);
+        $this->oob = new Process(['php', 'fixtures/oob.php']);
+        $this->read = $this->read->start();
+        $this->write = $this->write->start();
+        $this->oob = $this->oob->start();
         sleep(1);
     }
 
     public function tearDown()
     {
         try {
-            $this->server->processes()->kill($this->read->pid(), Signal::kill());
-            $this->server->processes()->kill($this->write->pid(), Signal::kill());
-            $this->server->processes()->kill($this->oob->pid(), Signal::kill());
+            $this->read->stop(10, SIGKILL);
+            $this->write->stop(10, SIGKILL);
+            $this->oob->stop(10, SIGKILL);
         } catch (\Throwable $e) {
             //pass
         }

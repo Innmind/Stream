@@ -9,7 +9,8 @@ use Innmind\Stream\{
     Selectable,
     Stream\Position,
     Stream\Position\Mode,
-    Stream\Size
+    Stream\Size,
+    Exception\InvalidArgumentException
 };
 use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
@@ -24,19 +25,17 @@ class StreamTest extends TestCase
         $this->assertInstanceOf(Selectable::class, $stream);
     }
 
-    /**
-     * @expectedException Innmind\Stream\Exception\InvalidArgumentException
-     */
     public function testThrowWhenNotAResource()
     {
+        $this->expectException(InvalidArgumentException::class);
+
         new Stream('foo');
     }
 
-    /**
-     * @expectedException Innmind\Stream\Exception\InvalidArgumentException
-     */
     public function testThrowWhenNotAStream()
     {
+        $this->expectException(InvalidArgumentException::class);
+
         new Stream(imagecreatetruecolor(42, 42));
     }
 

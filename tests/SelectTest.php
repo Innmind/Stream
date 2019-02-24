@@ -20,7 +20,7 @@ class SelectTest extends TestCase
     private $read;
     private $write;
 
-    public function setUp()
+    public function setUp(): void
     {
         $this->read = new Process(['php', 'fixtures/read.php']);
         $this->write = new Process(['php', 'fixtures/write.php']);
@@ -29,7 +29,7 @@ class SelectTest extends TestCase
         sleep(1);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         try {
             $this->read->stop(10, SIGKILL);

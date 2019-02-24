@@ -10,7 +10,9 @@ use Innmind\Stream\{
     Stream\Position,
     Stream\Position\Mode,
     Stream\Size,
-    Exception\DataPartiallyWritten
+    Exception\DataPartiallyWritten,
+    Exception\FailedToWriteToStream,
+    Exception\InvalidArgumentException
 };
 use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
@@ -25,19 +27,17 @@ class StreamTest extends TestCase
         $this->assertInstanceOf(Selectable::class, $stream);
     }
 
-    /**
-     * @expectedException Innmind\Stream\Exception\InvalidArgumentException
-     */
     public function testThrowWhenNotAResource()
     {
+        $this->expectException(InvalidArgumentException::class);
+
         new Stream('foo');
     }
 
-    /**
-     * @expectedException Innmind\Stream\Exception\InvalidArgumentException
-     */
     public function testThrowWhenNotAStream()
     {
+        $this->expectException(InvalidArgumentException::class);
+
         new Stream(imagecreatetruecolor(42, 42));
     }
 
@@ -122,13 +122,13 @@ class StreamTest extends TestCase
         $this->assertSame('foobarbaz', stream_get_contents($resource));
     }
 
-    /**
-     * @expectedException Innmind\Stream\Exception\FailedToWriteToStream
-     */
     public function testThrowWhenWritingToClosedStream()
     {
         $resource = tmpfile();
         $stream = new Stream($resource);
+
+        $this->expectException(FailedToWriteToStream::class);
+
         $stream
             ->close()
             ->write(new Str('foo'));

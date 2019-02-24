@@ -3,7 +3,10 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\Stream\Stream;
 
-use Innmind\Stream\Stream\Size;
+use Innmind\Stream\{
+    Stream\Size,
+    Exception\SizeCantBeNegative
+};
 use PHPUnit\Framework\TestCase;
 
 class SizeTest extends TestCase
@@ -19,12 +22,11 @@ class SizeTest extends TestCase
         $this->assertSame($expected, (string) $size);
     }
 
-    /**
-     * @expectedException Innmind\Stream\Exception\SizeCantBeNegative
-     * @expectedExceptionMessage -1
-     */
     public function testThrowWhenNegative()
     {
+        $this->expectException(SizeCantBeNegative::class);
+        $this->expectExceptionMessage('-1');
+
         new Size(-1);
     }
 

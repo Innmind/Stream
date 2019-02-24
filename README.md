@@ -35,7 +35,7 @@ Socket handling:
 ```php
 use Innmind\Stream\{
     Stream\Bidirectional,
-    Select
+    Watch\Select
 };
 use Innmind\TimeContinuum\ElapsedPeriod;
 
@@ -44,9 +44,9 @@ $select = (new Select(new ElapsedPeriod(60 * 1000))) //select with a 1 minute ti
     ->forRead($socket);
 
 do {
-    $sockets = $select();
+    $ready = $select();
 
-    if ($sockets->get('read')->contains($socket)) {
+    if ($ready->toRead()->contains($socket)) {
         $socket->write(
             $socket->read()->toUpper()
         );

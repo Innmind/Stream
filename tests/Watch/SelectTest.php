@@ -1,10 +1,12 @@
 <?php
 declare(strict_types = 1);
 
-namespace Tests\Innmind\Stream;
+namespace Tests\Innmind\Stream\Watch;
 
 use Innmind\Stream\{
-    Select,
+    Watch\Select,
+    Watch\Ready,
+    Watch,
     Selectable
 };
 use Innmind\TimeContinuum\ElapsedPeriod;
@@ -19,13 +21,16 @@ class SelectTest extends TestCase
 {
     private $read;
     private $write;
+    private $oob;
 
     public function setUp(): void
     {
         $this->read = new Process(['php', 'fixtures/read.php']);
         $this->write = new Process(['php', 'fixtures/write.php']);
+        $this->oob = new Process(['php', 'fixtures/oob.php']);
         $this->read = $this->read->start();
         $this->write = $this->write->start();
+        $this->oob = $this->oob->start();
         sleep(1);
     }
 
@@ -34,9 +39,18 @@ class SelectTest extends TestCase
         try {
             $this->read->stop(10, SIGKILL);
             $this->write->stop(10, SIGKILL);
+            $this->oob->stop(10, SIGKILL);
         } catch (\Throwable $e) {
             //pass
         }
+    }
+
+    public function testInterface()
+    {
+        $this->assertInstanceOf(
+            Watch::class,
+            new Select(new ElapsedPeriod(0))
+        );
     }
 
     public function testForRead()
@@ -89,18 +103,12 @@ class SelectTest extends TestCase
 
     public function testInvokeWhenNoStream()
     {
-        $streams = (new Select(new ElapsedPeriod(0)))();
+        $ready = (new Select(new ElapsedPeriod(0)))();
 
-        $this->assertInstanceOf(MapInterface::class, $streams);
-        $this->assertSame('string', (string) $streams->keyType());
-        $this->assertSame(SetInterface::class, (string) $streams->valueType());
-        $this->assertCount(3, $streams);
-        $this->assertCount(0, $streams->get('read'));
-        $this->assertCount(0, $streams->get('write'));
-        $this->assertCount(0, $streams->get('out_of_band'));
-        $this->assertSame(Selectable::class, (string) $streams->get('read')->type());
-        $this->assertSame(Selectable::class, (string) $streams->get('write')->type());
-        $this->assertSame(Selectable::class, (string) $streams->get('out_of_band')->type());
+        $this->assertInstanceOf(Ready::class, $ready);
+        $this->assertCount(0, $ready->toRead());
+        $this->assertCount(0, $ready->toWrite());
+        $this->assertCount(0, $ready->toOutOfBand());
     }
 
     public function testInvoke()
@@ -115,30 +123,34 @@ class SelectTest extends TestCase
             ->expects($this->exactly(2))
             ->method('resource')
             ->willReturn($writeSocket = stream_socket_client('unix:///tmp/write.sock'));
+        $outOfBand = $this->createMock(Selectable::class);
+        $outOfBand
+            ->expects($this->exactly(2))
+            ->method('resource')
+            ->willReturn($oobSocket = stream_socket_client('tcp://127.0.0.1:1234'));
         $select = (new Select(new ElapsedPeriod(0)))
             ->forRead($read)
-            ->forWrite($write);
+            ->forWrite($write)
+            ->forOutOfBand($outOfBand);
         fwrite($readSocket, 'foo');
         fwrite($writeSocket, 'foo');
+        stream_socket_sendto($oobSocket, 'foo', STREAM_OOB);
 
-        $streams = $select();
+        $ready = $select();
 
-        $this->assertInstanceOf(MapInterface::class, $streams);
-        $this->assertSame('string', (string) $streams->keyType());
-        $this->assertSame(SetInterface::class, (string) $streams->valueType());
-        $this->assertCount(3, $streams);
-        $this->assertCount(1, $streams->get('read'));
-        $this->assertCount(1, $streams->get('write'));
-        $this->assertSame(Selectable::class, (string) $streams->get('read')->type());
-        $this->assertSame(Selectable::class, (string) $streams->get('write')->type());
-        $this->assertSame(Selectable::class, (string) $streams->get('out_of_band')->type());
-        $this->assertSame($read, $streams->get('read')->current());
-        $this->assertSame($write, $streams->get('write')->current());
+        $this->assertInstanceOf(Ready::class, $ready);
+        $this->assertCount(1, $ready->toRead());
+        $this->assertCount(1, $ready->toWrite());
+        $this->assertCount(1, $ready->toOutOfBand());
+        $this->assertSame($read, $ready->toRead()->current());
+        $this->assertSame($write, $ready->toWrite()->current());
+        $this->assertSame($outOfBand, $ready->toOutOfBand()->current());
 
-        $streams = $select();
+        $ready = $select();
 
-        $this->assertCount(1, $streams->get('read'));
-        $this->assertCount(1, $streams->get('write'));
+        $this->assertCount(1, $ready->toRead());
+        $this->assertCount(1, $ready->toWrite());
+        $this->assertCount(1, $ready->toOutOfBand());
     }
 
     public function testUnwatch()
@@ -153,23 +165,32 @@ class SelectTest extends TestCase
             ->expects($this->exactly(3))
             ->method('resource')
             ->willReturn($writeSocket = stream_socket_client('unix:///tmp/write.sock'));
+        $outOfBand = $this->createMock(Selectable::class);
+        $outOfBand
+            ->expects($this->exactly(3))
+            ->method('resource')
+            ->willReturn($oobSocket = stream_socket_client('tcp://127.0.0.1:1234'));
         $select = (new Select(new ElapsedPeriod(0)))
             ->forRead($read)
-            ->forWrite($write);
+            ->forWrite($write)
+            ->forOutOfBand($outOfBand);
         fwrite($readSocket, 'foo');
         fwrite($writeSocket, 'foo');
+        stream_socket_sendto($oobSocket, 'foo', STREAM_OOB);
 
         $select();
         $select2 = $select
             ->unwatch($read)
-            ->unwatch($write);
+            ->unwatch($write)
+            ->unwatch($outOfBand);
 
         $this->assertInstanceOf(Select::class, $select);
         $this->assertNotSame($select2, $select);
 
         $streams = $select2();
 
-        $this->assertCount(0, $streams->get('read'));
-        $this->assertCount(0, $streams->get('write'));
+        $this->assertCount(0, $streams->toRead());
+        $this->assertCount(0, $streams->toWrite());
+        $this->assertCount(0, $streams->toOutOfBand());
     }
 }

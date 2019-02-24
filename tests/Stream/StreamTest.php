@@ -8,7 +8,9 @@ use Innmind\Stream\{
     Stream as StreamInterface,
     Stream\Position,
     Stream\Position\Mode,
-    Stream\Size
+    Stream\Size,
+    Exception\PositionNotSeekable,
+    Exception\InvalidArgumentException
 };
 use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
@@ -22,19 +24,17 @@ class StreamTest extends TestCase
         $this->assertInstanceOf(StreamInterface::class, $stream);
     }
 
-    /**
-     * @expectedException Innmind\Stream\Exception\InvalidArgumentException
-     */
     public function testThrowWhenNotAResource()
     {
+        $this->expectException(InvalidArgumentException::class);
+
         new Stream('foo');
     }
 
-    /**
-     * @expectedException Innmind\Stream\Exception\InvalidArgumentException
-     */
     public function testThrowWhenNotAStream()
     {
+        $this->expectException(InvalidArgumentException::class);
+
         new Stream(imagecreatetruecolor(42, 42));
     }
 
@@ -180,15 +180,15 @@ class StreamTest extends TestCase
         $this->assertSame($stream, $stream->close()->close());
     }
 
-    /**
-     * @expectedException Innmind\Stream\Exception\PositionNotSeekable
-     */
     public function testThrowWhenNotSeekable()
     {
         $resource = fopen('php://temp', 'r+');
         fwrite($resource, 'foobarbaz');
 
         $stream = new Stream($resource);
+
+        $this->expectException(PositionNotSeekable::class);
+
         $stream->seek(new Position(42));
     }
 
@@ -197,11 +197,10 @@ class StreamTest extends TestCase
         $this->assertInstanceOf(Stream::class, new Stream(fopen('php://stdin', 'rb')));
     }
 
-    /**
-     * @expectedException Innmind\Stream\Exception\PositionNotSeekable
-     */
     public function testThrowWhenTryingToSeekStdin()
     {
+        $this->expectException(PositionNotSeekable::class);
+
         (new Stream(fopen('php://stdin', 'rb')))
             ->seek(new Position(0));
     }
@@ -211,11 +210,10 @@ class StreamTest extends TestCase
         $this->assertInstanceOf(Stream::class, new Stream(fopen('php://stdout', 'rb')));
     }
 
-    /**
-     * @expectedException Innmind\Stream\Exception\PositionNotSeekable
-     */
     public function testThrowWhenTryingToSeekStdout()
     {
+        $this->expectException(PositionNotSeekable::class);
+
         (new Stream(fopen('php://stdout', 'rb')))
             ->seek(new Position(0));
     }
@@ -225,11 +223,10 @@ class StreamTest extends TestCase
         $this->assertInstanceOf(Stream::class, new Stream(fopen('php://stderr', 'rb')));
     }
 
-    /**
-     * @expectedException Innmind\Stream\Exception\PositionNotSeekable
-     */
     public function testThrowWhenTryingToSeekStderr()
     {
+        $this->expectException(PositionNotSeekable::class);
+
         (new Stream(fopen('php://stderr', 'rb')))
             ->seek(new Position(0));
     }

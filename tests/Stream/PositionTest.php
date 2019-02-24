@@ -3,7 +3,10 @@ declare(strict_types = 1);
 
 namespace Tests\Innmind\Stream\Stream;
 
-use Innmind\Stream\Stream\Position;
+use Innmind\Stream\{
+    Stream\Position,
+    Exception\PositionCantBeNegative
+};
 use PHPUnit\Framework\TestCase;
 
 class PositionTest extends TestCase
@@ -15,12 +18,11 @@ class PositionTest extends TestCase
         $this->assertSame(42, $position->toInt());
     }
 
-    /**
-     * @expectedException Innmind\Stream\Exception\PositionCantBeNegative
-     * @expectedExceptionMessage -1
-     */
     public function testThrowWhenNegative()
     {
+        $this->expectException(PositionCantBeNegative::class);
+        $this->expectExceptionMessage('-1');
+
         new Position(-1);
     }
 }

@@ -15,7 +15,7 @@
         "issues": "http://github.com/Innmind/Stream/issues"
     },
     "require": {
-        "php": "~7.1",
+        "php": "~7.2",
         "innmind/immutable": "^2.13",
         "innmind/time-continuum": "^1.0"
     },

@@ -19,8 +19,6 @@ final class Select
 
     public function __construct(ElapsedPeriod $timeout)
     {
-        @trigger_error('Use Watch\Select instead', E_USER_DEPRECATED);
-
         $this->select = new Watch\Select($timeout);
     }
 

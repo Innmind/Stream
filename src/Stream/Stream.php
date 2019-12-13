@@ -17,9 +17,9 @@ use Innmind\Stream\{
 final class Stream implements StreamInterface
 {
     private $resource;
-    private $size;
-    private $closed = false;
-    private $seekable = false;
+    private ?Size $size = null;
+    private bool $closed = false;
+    private bool $seekable = false;
 
     public function __construct($resource)
     {

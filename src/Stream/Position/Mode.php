@@ -5,10 +5,10 @@ namespace Innmind\Stream\Stream\Position;
 
 final class Mode
 {
-    private static $set;
-    private static $cur;
+    private static ?self $set;
+    private static ?self $cur;
 
-    private $value;
+    private int $value;
 
     private function __construct(int $value)
     {

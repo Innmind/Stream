@@ -16,13 +16,13 @@ use Innmind\Immutable\{
 
 final class Select implements Watch
 {
-    private $timeout;
-    private $read;
-    private $write;
-    private $outOfBand;
-    private $readResources;
-    private $writeResources;
-    private $outOfBandResources;
+    private ElapsedPeriod $timeout;
+    private Map $read;
+    private Map $write;
+    private Map $outOfBand;
+    private array $readResources;
+    private array $writeResources;
+    private array $outOfBandResources;
 
     public function __construct(ElapsedPeriod $timeout)
     {

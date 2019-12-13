@@ -16,7 +16,7 @@ use Innmind\Immutable\Str;
 
 final class NonBlocking implements Readable, Selectable
 {
-    private $stream;
+    private Readable $stream;
 
     public function __construct(Selectable $selectable)
     {

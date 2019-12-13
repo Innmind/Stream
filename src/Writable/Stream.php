@@ -19,8 +19,8 @@ use Innmind\Immutable\Str;
 final class Stream implements Writable, Selectable
 {
     private $resource;
-    private $stream;
-    private $closed = false;
+    private StreamInterface $stream;
+    private bool $closed = false;
 
     public function __construct($resource)
     {

@@ -17,7 +17,7 @@ use Innmind\Immutable\Str;
 final class Stream implements Readable, Selectable
 {
     private $resource;
-    private $stream;
+    private StreamInterface $stream;
 
     public function __construct($resource)
     {

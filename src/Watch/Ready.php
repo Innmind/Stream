@@ -9,9 +9,9 @@ use function Innmind\Immutable\assertSet;
 
 final class Ready
 {
-    private $read;
-    private $write;
-    private $outOfBand;
+    private Set $read;
+    private Set $write;
+    private Set $outOfBand;
 
     public function __construct(
         Set $read,

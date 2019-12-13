@@ -15,8 +15,8 @@ use Innmind\Immutable\Str;
 
 final class Bidirectional implements BidirectionalInterface, Selectable
 {
-    private $read;
-    private $write;
+    private Readable $read;
+    private Writable $write;
     private $resource;
 
     public function __construct($resource)

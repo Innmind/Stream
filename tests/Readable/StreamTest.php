@@ -12,6 +12,7 @@ use Innmind\Stream\{
     Stream\Size,
     Exception\InvalidArgumentException
 };
+use Innmind\Url\Path;
 use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
@@ -194,5 +195,16 @@ class StreamTest extends TestCase
         $stream->close();
 
         $this->assertSame('', $stream->toString());
+    }
+
+    public function testOpen()
+    {
+        $file = tempnam(sys_get_temp_dir(), '');
+        file_put_contents($file, 'watev');
+
+        $stream = Stream::open(Path::of($file));
+
+        $this->assertInstanceOf(Stream::class, $stream);
+        $this->assertSame('watev', $stream->toString());
     }
 }

@@ -12,6 +12,7 @@ use Innmind\Stream\{
     Stream\Position,
     Stream\Position\Mode
 };
+use Innmind\Url\Path;
 use Innmind\Immutable\Str;
 
 final class Stream implements Readable, Selectable
@@ -23,6 +24,11 @@ final class Stream implements Readable, Selectable
     {
         $this->stream = new Base($resource);
         $this->resource = $resource;
+    }
+
+    public static function open(Path $path): self
+    {
+        return new self(\fopen($path->toString(), 'r'));
     }
 
     /**

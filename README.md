@@ -1,10 +1,9 @@
 # Stream
 
-| `master` | `develop` |
-|----------|-----------|
-| [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Innmind/Stream/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Innmind/Stream/?branch=master) | [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Innmind/Stream/badges/quality-score.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/Stream/?branch=develop) |
-| [![Code Coverage](https://scrutinizer-ci.com/g/Innmind/Stream/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/Innmind/Stream/?branch=master) | [![Code Coverage](https://scrutinizer-ci.com/g/Innmind/Stream/badges/coverage.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/Stream/?branch=develop) |
-| [![Build Status](https://scrutinizer-ci.com/g/Innmind/Stream/badges/build.png?b=master)](https://scrutinizer-ci.com/g/Innmind/Stream/build-status/master) | [![Build Status](https://scrutinizer-ci.com/g/Innmind/Stream/badges/build.png?b=develop)](https://scrutinizer-ci.com/g/Innmind/Stream/build-status/develop) |
+| `develop` |
+|-----------|
+| [![codecov](https://codecov.io/gh/Innmind/Stream/branch/develop/graph/badge.svg)](https://codecov.io/gh/Innmind/Stream) |
+| [![Build Status](https://travis-ci.org/Innmind/Stream.svg?branch=develop)](https://travis-ci.org/Innmind/Stream) |
 
 Simple wrapper to work with resource streams.
 
@@ -20,11 +19,12 @@ File handling:
 
 ```php
 use Innmind\Stream\Readable\Stream;
+use Innmind\Url\Path;
 
-$file = new Stream(fopen('/some/path/to/a/file', 'r'));
+$file = Stream::open(Path::of('/some/path/to/a/file'));
 
 while (!$file->end()) {
-    echo $file->readLine();
+    echo $file->readLine()->toString();
 }
 
 $file->close();
@@ -35,9 +35,9 @@ Socket handling:
 ```php
 use Innmind\Stream\{
     Stream\Bidirectional,
-    Watch\Select
+    Watch\Select,
 };
-use Innmind\TimeContinuum\ElapsedPeriod;
+use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 
 $socket = new Bidirectional(stream_socket_client('unix:///path/to/socket.sock'));
 $select = (new Select(new ElapsedPeriod(60 * 1000))) //select with a 1 minute timeout

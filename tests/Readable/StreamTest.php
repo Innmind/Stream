@@ -207,4 +207,12 @@ class StreamTest extends TestCase
         $this->assertInstanceOf(Stream::class, $stream);
         $this->assertSame('watev', $stream->toString());
     }
+
+    public function testOfContent()
+    {
+        $stream = Stream::ofContent('foo');
+
+        $this->assertInstanceOf(Stream::class, $stream);
+        $this->assertSame('foo', $stream->toString());
+    }
 }

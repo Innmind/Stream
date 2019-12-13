@@ -31,6 +31,14 @@ final class Stream implements Readable, Selectable
         return new self(\fopen($path->toString(), 'r'));
     }
 
+    public static function ofContent(string $content): self
+    {
+        $resource = \fopen('php://temp', 'r+');
+        \fwrite($resource, $content);
+
+        return new self($resource);
+    }
+
     /**
      * {@inheritdoc}
      */

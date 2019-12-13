@@ -5,10 +5,10 @@ namespace Innmind\Stream\Stream\Position;
 
 final class Mode
 {
-    private static $set;
-    private static $cur;
+    private static ?self $set;
+    private static ?self $cur;
 
-    private $value;
+    private int $value;
 
     private function __construct(int $value)
     {
@@ -17,12 +17,12 @@ final class Mode
 
     public static function fromStart(): self
     {
-        return self::$set ?? self::$set = new self(SEEK_SET);
+        return self::$set ?? self::$set = new self(\SEEK_SET);
     }
 
     public static function fromCurrentPosition(): self
     {
-        return self::$cur ?? self::$cur = new self(SEEK_CUR);
+        return self::$cur ?? self::$cur = new self(\SEEK_CUR);
     }
 
     public function toInt(): int

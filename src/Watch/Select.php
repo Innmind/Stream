@@ -10,28 +10,35 @@ use Innmind\Stream\{
 };
 use Innmind\TimeContinuum\ElapsedPeriod;
 use Innmind\Immutable\{
-    MapInterface,
     Map,
-    SetInterface,
-    Set
+    Set,
 };
 
 final class Select implements Watch
 {
-    private $timeout;
-    private $read;
-    private $write;
-    private $outOfBand;
-    private $readResources;
-    private $writeResources;
-    private $outOfBandResources;
+    private ElapsedPeriod $timeout;
+    /** @var Map<resource, Selectable> */
+    private Map $read;
+    /** @var Map<resource, Selectable> */
+    private Map $write;
+    /** @var Map<resource, Selectable> */
+    private Map $outOfBand;
+    /** @var array<resource> */
+    private array $readResources;
+    /** @var array<resource> */
+    private array $writeResources;
+    /** @var array<resource> */
+    private array $outOfBandResources;
 
     public function __construct(ElapsedPeriod $timeout)
     {
         $this->timeout = $timeout;
-        $this->read = new Map('resource', Selectable::class);
-        $this->write = new Map('resource', Selectable::class);
-        $this->outOfBand = new Map('resource', Selectable::class);
+        /** @var Map<resource, Selectable> */
+        $this->read = Map::of('resource', Selectable::class);
+        /** @var Map<resource, Selectable> */
+        $this->write = Map::of('resource', Selectable::class);
+        /** @var Map<resource, Selectable> */
+        $this->outOfBand = Map::of('resource', Selectable::class);
         $this->readResources = [];
         $this->writeResources = [];
         $this->outOfBandResources = [];
@@ -40,16 +47,16 @@ final class Select implements Watch
     public function forRead(Selectable $read, Selectable ...$reads): Watch
     {
         $self = clone $this;
-        $self->read = $self->read->put(
+        $self->read = ($self->read)(
             $read->resource(),
-            $read
+            $read,
         );
         $self->readResources[] = $read->resource();
 
         foreach ($reads as $read) {
-            $self->read = $self->read->put(
+            $self->read = ($self->read)(
                 $read->resource(),
-                $read
+                $read,
             );
             $self->readResources[] = $read->resource();
         }
@@ -60,16 +67,16 @@ final class Select implements Watch
     public function forWrite(Selectable $write, Selectable ...$writes): Watch
     {
         $self = clone $this;
-        $self->write = $self->write->put(
+        $self->write = ($self->write)(
             $write->resource(),
-            $write
+            $write,
         );
         $self->writeResources[] = $write->resource();
 
         foreach ($writes as $write) {
-            $self->write = $self->write->put(
+            $self->write = ($self->write)(
                 $write->resource(),
-                $write
+                $write,
             );
             $self->writeResources[] = $write->resource();
         }
@@ -82,16 +89,16 @@ final class Select implements Watch
         Selectable ...$outOfBands
     ): Watch {
         $self = clone $this;
-        $self->outOfBand = $self->outOfBand->put(
+        $self->outOfBand = ($self->outOfBand)(
             $outOfBand->resource(),
-            $outOfBand
+            $outOfBand,
         );
         $self->outOfBandResources[] = $outOfBand->resource();
 
         foreach ($outOfBands as $outOfBand) {
-            $self->outOfBand = $self->outOfBand->put(
+            $self->outOfBand = ($self->outOfBand)(
                 $outOfBand->resource(),
-                $outOfBand
+                $outOfBand,
             );
             $self->outOfBandResources[] = $outOfBand->resource();
         }
@@ -106,24 +113,24 @@ final class Select implements Watch
         $self->read = $self->read->remove($resource);
         $self->write = $self->write->remove($resource);
         $self->outOfBand = $self->outOfBand->remove($resource);
-        $self->readResources = \array_filter(
+        $self->readResources = \array_values(\array_filter(
             $self->readResources,
             static function($read) use ($resource): bool {
                 return $read !== $resource;
-            }
-        );
-        $self->writeResources = \array_filter(
+            },
+        ));
+        $self->writeResources = \array_values(\array_filter(
             $self->writeResources,
             static function($write) use ($resource): bool {
                 return $write !== $resource;
-            }
-        );
-        $self->outOfBandResources = \array_filter(
+            },
+        ));
+        $self->outOfBandResources = \array_values(\array_filter(
             $self->outOfBandResources,
             static function($outOfBand) use ($resource): bool {
                 return $outOfBand !== $resource;
-            }
-        );
+            },
+        ));
 
         return $self;
     }
@@ -135,11 +142,9 @@ final class Select implements Watch
             $this->write->empty() &&
             $this->outOfBand->empty()
         ) {
-            return new Ready(
-                new Set(Selectable::class),
-                new Set(Selectable::class),
-                new Set(Selectable::class)
-            );
+            /** @var Set<Selectable> */
+            $nothingReady = Set::of(Selectable::class);
+            return new Ready($nothingReady, $nothingReady, $nothingReady);
         }
 
         $read = $this->readResources;
@@ -153,46 +158,68 @@ final class Select implements Watch
             $write,
             $outOfBand,
             $seconds,
-            $microseconds
+            $microseconds,
         );
 
         if ($return === false) {
             $error = \error_get_last();
 
+            /**
+             * @psalm-suppress PossiblyNullArrayAccess
+             * @psalm-suppress PossiblyNullArgument
+             */
             throw new SelectFailed(
                 $error['message'],
-                $error['type']
+                $error['type'],
             );
         }
 
-        return new Ready(
-            \array_reduce(
-                $read,
-                function(SetInterface $carry, $resource): SetInterface {
-                    return $carry->add(
-                        $this->read->get($resource)
-                    );
-                },
-                new Set(Selectable::class)
-            ),
-            \array_reduce(
-                $write,
-                function(SetInterface $carry, $resource): SetInterface {
-                    return $carry->add(
-                        $this->write->get($resource)
-                    );
-                },
-                new Set(Selectable::class)
-            ),
-            \array_reduce(
-                $outOfBand,
-                function(SetInterface $carry, $resource): SetInterface {
-                    return $carry->add(
-                        $this->outOfBand->get($resource)
-                    );
-                },
-                new Set(Selectable::class)
-            )
+        /**
+         * @var Set<Selectable>
+         * @psalm-suppress MissingClosureParamType
+         * @psalm-suppress PossiblyNullArgument
+         * @psalm-suppress MixedArgument because $resource can't be typed
+         */
+        $readable = \array_reduce(
+            $read,
+            function(Set $carry, $resource): Set {
+                return $carry->add(
+                    $this->read->get($resource),
+                );
+            },
+            Set::of(Selectable::class),
         );
+        /**
+         * @var Set<Selectable>
+         * @psalm-suppress MissingClosureParamType
+         * @psalm-suppress PossiblyNullArgument
+         * @psalm-suppress MixedArgument because $resource can't be typed
+         */
+        $writable = \array_reduce(
+            $write,
+            function(Set $carry, $resource): Set {
+                return $carry->add(
+                    $this->write->get($resource),
+                );
+            },
+            Set::of(Selectable::class),
+        );
+        /**
+         * @var Set<Selectable>
+         * @psalm-suppress MissingClosureParamType
+         * @psalm-suppress PossiblyNullArgument
+         * @psalm-suppress MixedArgument because $resource can't be typed
+         */
+        $outOfBandReady = \array_reduce(
+            $outOfBand,
+            function(Set $carry, $resource): Set {
+                return $carry->add(
+                    $this->outOfBand->get($resource),
+                );
+            },
+            Set::of(Selectable::class),
+        );
+
+        return new Ready($readable, $writable, $outOfBandReady);
     }
 }

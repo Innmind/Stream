@@ -12,17 +12,35 @@ use Innmind\Stream\{
     Stream\Position,
     Stream\Position\Mode
 };
+use Innmind\Url\Path;
 use Innmind\Immutable\Str;
 
 final class Stream implements Readable, Selectable
 {
+    /** @var resource */
     private $resource;
-    private $stream;
+    private StreamInterface $stream;
 
+    /**
+     * @param resource $resource
+     */
     public function __construct($resource)
     {
         $this->stream = new Base($resource);
         $this->resource = $resource;
+    }
+
+    public static function open(Path $path): self
+    {
+        return new self(\fopen($path->toString(), 'r'));
+    }
+
+    public static function ofContent(string $content): self
+    {
+        $resource = \fopen('php://temp', 'r+');
+        \fwrite($resource, $content);
+
+        return new self($resource);
     }
 
     /**
@@ -39,22 +57,22 @@ final class Stream implements Readable, Selectable
     public function read(int $length = null): Str
     {
         if ($this->closed()) {
-            return new Str('');
+            return Str::of('');
         }
 
-        return new Str((string) stream_get_contents(
+        return Str::of((string) \stream_get_contents(
             $this->resource,
-            $length ?? -1
+            $length ?? -1,
         ));
     }
 
     public function readLine(): Str
     {
         if ($this->closed()) {
-            return new Str('');
+            return Str::of('');
         }
 
-        return new Str((string) fgets($this->resource));
+        return Str::of((string) \fgets($this->resource));
     }
 
     public function position(): Position
@@ -62,18 +80,14 @@ final class Stream implements Readable, Selectable
         return $this->stream->position();
     }
 
-    public function seek(Position $position, Mode $mode = null): StreamInterface
+    public function seek(Position $position, Mode $mode = null): void
     {
         $this->stream->seek($position, $mode);
-
-        return $this;
     }
 
-    public function rewind(): StreamInterface
+    public function rewind(): void
     {
         $this->stream->rewind();
-
-        return $this;
     }
 
     public function end(): bool
@@ -91,11 +105,9 @@ final class Stream implements Readable, Selectable
         return $this->stream->knowsSize();
     }
 
-    public function close(): StreamInterface
+    public function close(): void
     {
         $this->stream->close();
-
-        return $this;
     }
 
     public function closed(): bool
@@ -103,10 +115,10 @@ final class Stream implements Readable, Selectable
         return $this->stream->closed();
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
         $this->rewind();
 
-        return (string) $this->read();
+        return $this->read()->toString();
     }
 }

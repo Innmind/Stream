@@ -7,5 +7,5 @@ use Innmind\Immutable\Str;
 
 interface Writable extends Stream
 {
-    public function write(Str $data): self;
+    public function write(Str $data): void;
 }

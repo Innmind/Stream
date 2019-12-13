@@ -11,35 +11,43 @@ use Innmind\Stream\{
     Exception\InvalidArgumentException,
     Exception\UnknownSize,
     Exception\FailedToCloseStream,
-    Exception\PositionNotSeekable
+    Exception\PositionNotSeekable,
 };
 
 final class Stream implements StreamInterface
 {
+    /** @var resource */
     private $resource;
-    private $size;
-    private $closed = false;
-    private $seekable = false;
+    private ?Size $size = null;
+    private bool $closed = false;
+    private bool $seekable = false;
 
+    /**
+     * @param resource $resource
+     */
     public function __construct($resource)
     {
-        if (!is_resource($resource) || get_resource_type($resource) !== 'stream') {
+        /**
+         * @psalm-suppress DocblockTypeContradiction
+         * @psalm-suppress RedundantConditionGivenDocblockType
+         */
+        if (!\is_resource($resource) || \get_resource_type($resource) !== 'stream') {
             throw new InvalidArgumentException;
         }
 
         $this->resource = $resource;
-        $meta = stream_get_meta_data($resource);
+        $meta = \stream_get_meta_data($resource);
 
-        if ($meta['seekable'] && substr($meta['uri'], 0, 9) !== 'php://std') {
+        if ($meta['seekable'] && \substr($meta['uri'], 0, 9) !== 'php://std') {
             //stdin, stdout and stderr are not seekable
             $this->seekable = true;
             $this->rewind();
         }
 
-        $stats = fstat($resource);
+        $stats = \fstat($resource);
 
         if (isset($stats['size'])) {
-            $this->size = new Size($stats['size']);
+            $this->size = new Size((int) $stats['size']);
         }
     }
 
@@ -47,41 +55,37 @@ final class Stream implements StreamInterface
     {
         if ($this->closed()) {
             return new Position(
-                $this->size ? $this->size->toInt() : 0
+                $this->size ? $this->size->toInt() : 0,
             );
         }
 
-        return new Position(ftell($this->resource));
+        return new Position(\ftell($this->resource));
     }
 
-    public function seek(Position $position, Mode $mode = null): StreamInterface
+    public function seek(Position $position, Mode $mode = null): void
     {
         if (!$this->seekable) {
             throw new PositionNotSeekable;
         }
 
         if ($this->closed()) {
-            return $this;
+            return;
         }
 
-        $status = fseek(
+        $status = \fseek(
             $this->resource,
             $position->toInt(),
-            ($mode ?? Mode::fromStart())->toInt()
+            ($mode ?? Mode::fromStart())->toInt(),
         );
 
         if ($status === -1) {
             throw new PositionNotSeekable;
         }
-
-        return $this;
     }
 
-    public function rewind(): StreamInterface
+    public function rewind(): void
     {
         $this->seek(new Position(0));
-
-        return $this;
     }
 
     public function end(): bool
@@ -90,12 +94,12 @@ final class Stream implements StreamInterface
             return true;
         }
 
-        return feof($this->resource);
+        return \feof($this->resource);
     }
 
     public function size(): Size
     {
-        if (!$this->knowsSize()) {
+        if (!$this->size instanceof Size) {
             throw new UnknownSize;
         }
 
@@ -107,25 +111,24 @@ final class Stream implements StreamInterface
         return $this->size instanceof Size;
     }
 
-    public function close(): StreamInterface
+    public function close(): void
     {
         if ($this->closed()) {
-            return $this;
+            return;
         }
 
-        $return = fclose($this->resource);
+        $return = \fclose($this->resource);
 
         if ($return = false) {
             throw new FailedToCloseStream;
         }
 
         $this->closed = true;
-
-        return $this;
     }
 
     public function closed(): bool
     {
-        return $this->closed || !is_resource($this->resource);
+        /** @psalm-suppress DocblockTypeContradiction */
+        return $this->closed || !\is_resource($this->resource);
     }
 }

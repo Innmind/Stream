@@ -9,20 +9,24 @@ use Innmind\Stream\{
     Bidirectional as BidirectionalInterface,
     Selectable,
     Stream as StreamInterface,
-    Stream\Position\Mode
+    Stream\Position\Mode,
 };
 use Innmind\Immutable\Str;
 
 final class Bidirectional implements BidirectionalInterface, Selectable
 {
-    private $read;
-    private $write;
+    private Readable $read;
+    private Writable $write;
+    /** @var resource */
     private $resource;
 
+    /**
+     * @param resource $resource
+     */
     public function __construct($resource)
     {
         $this->read = new Readable\NonBlocking(
-            new Readable\Stream($resource)
+            new Readable\Stream($resource),
         );
         $this->write = new Writable\Stream($resource);
         $this->resource = $resource;
@@ -36,11 +40,9 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->resource;
     }
 
-    public function close(): StreamInterface
+    public function close(): void
     {
         $this->write->close();
-
-        return $this;
     }
 
     public function closed(): bool
@@ -53,18 +55,14 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->read->position();
     }
 
-    public function seek(Position $position, Mode $mode = null): StreamInterface
+    public function seek(Position $position, Mode $mode = null): void
     {
         $this->read->seek($position, $mode);
-
-        return $this;
     }
 
-    public function rewind(): StreamInterface
+    public function rewind(): void
     {
         $this->read->rewind();
-
-        return $this;
     }
 
     public function end(): bool
@@ -95,15 +93,13 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->read->readLine();
     }
 
-    public function write(Str $data): Writable
+    public function write(Str $data): void
     {
         $this->write->write($data);
-
-        return $this;
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
-        return (string) $this->read;
+        return $this->read->toString();
     }
 }

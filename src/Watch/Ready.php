@@ -4,20 +4,25 @@ declare(strict_types = 1);
 namespace Innmind\Stream\Watch;
 
 use Innmind\Stream\Selectable;
-use Innmind\Immutable\SetInterface;
+use Innmind\Immutable\Set;
 use function Innmind\Immutable\assertSet;
 
 final class Ready
 {
-    private $read;
-    private $write;
-    private $outOfBand;
+    /** @var Set<Selectable> */
+    private Set $read;
+    /** @var Set<Selectable> */
+    private Set $write;
+    /** @var Set<Selectable> */
+    private Set $outOfBand;
 
-    public function __construct(
-        SetInterface $read,
-        SetInterface $write,
-        SetInterface $outOfBand
-    ) {
+    /**
+     * @param Set<Selectable> $read
+     * @param Set<Selectable> $write
+     * @param Set<Selectable> $outOfBand
+     */
+    public function __construct(Set $read, Set $write, Set $outOfBand)
+    {
         assertSet(Selectable::class, $read, 1);
         assertSet(Selectable::class, $write, 2);
         assertSet(Selectable::class, $outOfBand, 3);
@@ -28,25 +33,25 @@ final class Ready
     }
 
     /**
-     * @return SetInterface<Selectable>
+     * @return Set<Selectable>
      */
-    public function toRead(): SetInterface
+    public function toRead(): Set
     {
         return $this->read;
     }
 
     /**
-     * @return SetInterface<Selectable>
+     * @return Set<Selectable>
      */
-    public function toWrite(): SetInterface
+    public function toWrite(): Set
     {
         return $this->write;
     }
 
     /**
-     * @return SetInterface<Selectable>
+     * @return Set<Selectable>
      */
-    public function toOutOfBand(): SetInterface
+    public function toOutOfBand(): Set
     {
         return $this->outOfBand;
     }

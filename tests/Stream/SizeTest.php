@@ -19,7 +19,7 @@ class SizeTest extends TestCase
         $size = new Size($value);
 
         $this->assertSame($value, $size->toInt());
-        $this->assertSame($expected, (string) $size);
+        $this->assertSame($expected, $size->toString());
     }
 
     public function testThrowWhenNegative()

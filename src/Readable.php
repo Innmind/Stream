@@ -12,5 +12,5 @@ interface Readable extends Stream
      */
     public function read(int $length = null): Str;
     public function readLine(): Str;
-    public function __toString(): string;
+    public function toString(): string;
 }

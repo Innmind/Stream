@@ -7,15 +7,22 @@ use Innmind\Immutable\Str;
 
 final class DataPartiallyWritten extends RuntimeException
 {
-    private $data;
-    private $written;
+    private Str $data;
+    private int $written;
 
     public function __construct(Str $data, int $written)
     {
-        parent::__construct(sprintf(
-            '%s out of %s written',
+        $suggestion = '';
+
+        if ($written > $data->length()) {
+            $suggestion = ', it seems you are not using the correct string encoding';
+        }
+
+        parent::__construct(\sprintf(
+            '%s out of %s written%s',
             $written,
-            $data->length()
+            $data->length(),
+            $suggestion,
         ));
         $this->data = $data;
         $this->written = $written;

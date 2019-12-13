@@ -18,10 +18,14 @@ use Innmind\Immutable\Str;
 
 final class Stream implements Writable, Selectable
 {
+    /** @var resource */
     private $resource;
-    private $stream;
-    private $closed = false;
+    private StreamInterface $stream;
+    private bool $closed = false;
 
+    /**
+     * @param resource $resource
+     */
     public function __construct($resource)
     {
         $this->stream = new Base($resource);
@@ -36,23 +40,21 @@ final class Stream implements Writable, Selectable
         return $this->resource;
     }
 
-    public function write(Str $data): Writable
+    public function write(Str $data): void
     {
         if ($this->closed()) {
             throw new FailedToWriteToStream;
         }
 
-        $return = @fwrite($this->resource, (string) $data);
+        $written = @\fwrite($this->resource, $data->toString());
 
-        if ($return === false) {
+        if ($written === false) {
             throw new FailedToWriteToStream;
         }
 
-        if ($return !== $data->length()) {
-            throw new DataPartiallyWritten($data, $return);
+        if ($written !== $data->length()) {
+            throw new DataPartiallyWritten($data, $written);
         }
-
-        return $this;
     }
 
     public function position(): Position
@@ -60,18 +62,14 @@ final class Stream implements Writable, Selectable
         return $this->stream->position();
     }
 
-    public function seek(Position $position, Mode $mode = null): StreamInterface
+    public function seek(Position $position, Mode $mode = null): void
     {
         $this->stream->seek($position, $mode);
-
-        return $this;
     }
 
-    public function rewind(): StreamInterface
+    public function rewind(): void
     {
         $this->stream->rewind();
-
-        return $this;
     }
 
     public function end(): bool
@@ -89,11 +87,9 @@ final class Stream implements Writable, Selectable
         return $this->stream->knowsSize();
     }
 
-    public function close(): StreamInterface
+    public function close(): void
     {
         $this->stream->close();
-
-        return $this;
     }
 
     public function closed(): bool

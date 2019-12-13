@@ -7,7 +7,7 @@ use Innmind\Stream\Exception\PositionCantBeNegative;
 
 final class Position
 {
-    private $value;
+    private int $value;
 
     public function __construct(int $value)
     {

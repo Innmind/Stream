@@ -14,8 +14,8 @@ final class Size
     public const TERABYTES = 1024 ** 5;
     public const PETABYTES = 1024 ** 6;
 
-    private $value;
-    private $string;
+    private int $value;
+    private string $string;
 
     public function __construct(int $value)
     {
@@ -24,6 +24,7 @@ final class Size
         }
 
         $this->value = $value;
+        $this->string = $value.'B';
 
         switch (true) {
             case $value < self::BYTES:
@@ -31,37 +32,37 @@ final class Size
                 break;
 
             case $value < self::KILOBYTES:
-                $this->string = sprintf(
+                $this->string = \sprintf(
                     '%sKB',
-                    round($value / self::BYTES, 3)
+                    \round($value / self::BYTES, 3),
                 );
                 break;
 
             case $value < self::MEGABYTES:
-                $this->string = sprintf(
+                $this->string = \sprintf(
                     '%sMB',
-                    round($value / self::KILOBYTES, 3)
+                    \round($value / self::KILOBYTES, 3),
                 );
                 break;
 
             case $value < self::GIGABYTES:
-                $this->string = sprintf(
+                $this->string = \sprintf(
                     '%sGB',
-                    round($value / self::MEGABYTES, 3)
+                    \round($value / self::MEGABYTES, 3),
                 );
                 break;
 
             case $value < self::TERABYTES:
-                $this->string = sprintf(
+                $this->string = \sprintf(
                     '%sTB',
-                    round($value / self::GIGABYTES, 3)
+                    \round($value / self::GIGABYTES, 3),
                 );
                 break;
 
             case $value < self::PETABYTES:
-                $this->string = sprintf(
+                $this->string = \sprintf(
                     '%sPB',
-                    round($value / self::TERABYTES, 3)
+                    \round($value / self::TERABYTES, 3),
                 );
                 break;
         }
@@ -72,7 +73,7 @@ final class Size
         return $this->value;
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
         return $this->string;
     }

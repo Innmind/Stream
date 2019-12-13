@@ -72,7 +72,7 @@ final class Size
         return $this->value;
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
         return $this->string;
     }

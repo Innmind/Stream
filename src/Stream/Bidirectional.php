@@ -17,8 +17,12 @@ final class Bidirectional implements BidirectionalInterface, Selectable
 {
     private Readable $read;
     private Writable $write;
+    /** @var resource */
     private $resource;
 
+    /**
+     * @param resource $resource
+     */
     public function __construct($resource)
     {
         $this->read = new Readable\NonBlocking(

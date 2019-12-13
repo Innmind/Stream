@@ -24,6 +24,7 @@ final class Size
         }
 
         $this->value = $value;
+        $this->string = $value.'B';
 
         switch (true) {
             case $value < self::BYTES:

@@ -9,15 +9,20 @@ use function Innmind\Immutable\assertSet;
 
 final class Ready
 {
+    /** @var Set<Selectable> */
     private Set $read;
+    /** @var Set<Selectable> */
     private Set $write;
+    /** @var Set<Selectable> */
     private Set $outOfBand;
 
-    public function __construct(
-        Set $read,
-        Set $write,
-        Set $outOfBand
-    ) {
+    /**
+     * @param Set<Selectable> $read
+     * @param Set<Selectable> $write
+     * @param Set<Selectable> $outOfBand
+     */
+    public function __construct(Set $read, Set $write, Set $outOfBand)
+    {
         assertSet(Selectable::class, $read, 1);
         assertSet(Selectable::class, $write, 2);
         assertSet(Selectable::class, $outOfBand, 3);

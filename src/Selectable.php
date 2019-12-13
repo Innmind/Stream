@@ -6,7 +6,7 @@ namespace Innmind\Stream;
 interface Selectable extends Stream
 {
     /**
-     * @return resource<stream>
+     * @return resource stream
      */
     public function resource();
 }

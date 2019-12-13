@@ -18,10 +18,14 @@ use Innmind\Immutable\Str;
 
 final class Stream implements Writable, Selectable
 {
+    /** @var resource */
     private $resource;
     private StreamInterface $stream;
     private bool $closed = false;
 
+    /**
+     * @param resource $resource
+     */
     public function __construct($resource)
     {
         $this->stream = new Base($resource);

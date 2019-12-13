@@ -16,13 +16,21 @@ use Innmind\Stream\{
 
 final class Stream implements StreamInterface
 {
+    /** @var resource */
     private $resource;
     private ?Size $size = null;
     private bool $closed = false;
     private bool $seekable = false;
 
+    /**
+     * @param resource $resource
+     */
     public function __construct($resource)
     {
+        /**
+         * @psalm-suppress DocblockTypeContradiction
+         * @psalm-suppress RedundantConditionGivenDocblockType
+         */
         if (!\is_resource($resource) || \get_resource_type($resource) !== 'stream') {
             throw new InvalidArgumentException;
         }
@@ -39,7 +47,7 @@ final class Stream implements StreamInterface
         $stats = \fstat($resource);
 
         if (isset($stats['size'])) {
-            $this->size = new Size($stats['size']);
+            $this->size = new Size((int) $stats['size']);
         }
     }
 
@@ -91,7 +99,7 @@ final class Stream implements StreamInterface
 
     public function size(): Size
     {
-        if (!$this->knowsSize()) {
+        if (!$this->size instanceof Size) {
             throw new UnknownSize;
         }
 
@@ -120,6 +128,7 @@ final class Stream implements StreamInterface
 
     public function closed(): bool
     {
+        /** @psalm-suppress DocblockTypeContradiction */
         return $this->closed || !\is_resource($this->resource);
     }
 }

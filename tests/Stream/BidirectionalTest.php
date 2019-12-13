@@ -159,7 +159,10 @@ class BidirectionalTest extends TestCase
         } catch (DataPartiallyWritten $e) {
             $this->assertSame($data, $e->data());
             $this->assertSame(4, $e->written());
-            $this->assertSame('4 out of 1 written', $e->getMessage());
+            $this->assertSame(
+                '4 out of 1 written, it seems you are not using the correct string encoding',
+                $e->getMessage(),
+            );
         }
     }
 

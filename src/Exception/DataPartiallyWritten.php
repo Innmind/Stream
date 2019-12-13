@@ -12,10 +12,15 @@ final class DataPartiallyWritten extends RuntimeException
 
     public function __construct(Str $data, int $written)
     {
+        if ($written > $data->length()) {
+            $suggestion = ', it seems you are not using the correct string encoding';
+        }
+
         parent::__construct(\sprintf(
-            '%s out of %s written',
+            '%s out of %s written%s',
             $written,
             $data->length(),
+            $suggestion ?? '',
         ));
         $this->data = $data;
         $this->written = $written;

@@ -122,7 +122,7 @@ class BidirectionalTest extends TestCase
         $resource = tmpfile();
         $stream = new Bidirectional($resource);
 
-        $this->assertSame($stream, $stream->write(new Str('foobarbaz')));
+        $this->assertSame($stream, $stream->write(Str::of('foobarbaz')));
         fseek($resource, 0);
         $this->assertSame('foobarbaz', stream_get_contents($resource));
     }
@@ -136,7 +136,7 @@ class BidirectionalTest extends TestCase
 
         $stream
             ->close()
-            ->write(new Str('foo'));
+            ->write(Str::of('foo'));
     }
 
     public function testThrowWhenWriteFailed()
@@ -144,13 +144,23 @@ class BidirectionalTest extends TestCase
         $resource = fopen('php://temp', 'r');
         $stream = new Bidirectional($resource);
 
+        $this->expectException(FailedToWriteToStream::class);
+
+        $stream->write(Str::of('foo'));
+    }
+
+    public function testThrowWhenDataPartiallyWritten()
+    {
+        $resource = fopen('php://temp', 'w');
+        $stream = new Bidirectional($resource);
+
         try {
-            $stream->write($data = new Str('foo'));
+            $stream->write($data = Str::of('🤔')); // because it doesn't use ASCII encoding
             $this->fail('it should throw');
         } catch (DataPartiallyWritten $e) {
             $this->assertSame($data, $e->data());
-            $this->assertSame(0, $e->written());
-            $this->assertSame('0 out of 3 written', $e->getMessage());
+            $this->assertSame(4, $e->written());
+            $this->assertSame('4 out of 1 written', $e->getMessage());
         }
     }
 
@@ -162,10 +172,10 @@ class BidirectionalTest extends TestCase
         $text = $stream->read(3);
 
         $this->assertInstanceOf(Str::class, $text);
-        $this->assertSame('foo', (string) $text);
-        $this->assertSame('bar', (string) $stream->read(3));
-        $this->assertSame('baz', (string) $stream->read(3));
-        $this->assertSame('', (string) $stream->read(3));
+        $this->assertSame('foo', $text->toString());
+        $this->assertSame('bar', $stream->read(3)->toString());
+        $this->assertSame('baz', $stream->read(3)->toString());
+        $this->assertSame('', $stream->read(3)->toString());
     }
 
     public function testReadOnceClosed()
@@ -174,7 +184,7 @@ class BidirectionalTest extends TestCase
         fwrite($resource, 'foobarbaz');
         $stream = new Bidirectional($resource);
 
-        $this->assertSame('', (string) $stream->close()->read());
+        $this->assertSame('', $stream->close()->read()->toString());
     }
 
     public function testReadRemaining()
@@ -187,7 +197,7 @@ class BidirectionalTest extends TestCase
             ->read();
 
         $this->assertInstanceOf(Str::class, $text);
-        $this->assertSame('barbaz', (string) $text);
+        $this->assertSame('barbaz', $text->toString());
     }
 
     public function testReadLine()
@@ -198,10 +208,10 @@ class BidirectionalTest extends TestCase
         $line = $stream->readLine();
 
         $this->assertInstanceOf(Str::class, $line);
-        $this->assertSame("foo\n", (string) $line);
-        $this->assertSame("bar\n", (string) $stream->readLine());
-        $this->assertSame('baz', (string) $stream->readLine());
-        $this->assertSame('', (string) $stream->readLine());
+        $this->assertSame("foo\n", $line->toString());
+        $this->assertSame("bar\n", $stream->readLine()->toString());
+        $this->assertSame('baz', $stream->readLine()->toString());
+        $this->assertSame('', $stream->readLine()->toString());
     }
 
     public function testStringCast()

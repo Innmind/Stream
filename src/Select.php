@@ -5,9 +5,8 @@ namespace Innmind\Stream;
 
 use Innmind\TimeContinuum\ElapsedPeriod;
 use Innmind\Immutable\{
-    MapInterface,
     Map,
-    SetInterface
+    Set,
 };
 
 /**
@@ -57,13 +56,13 @@ final class Select
     }
 
     /**
-     * @return MapInterface<string, SetInterface<Selectable>> Key can be read, write or out_of_band
+     * @return Map<string, Set<Selectable>> Key can be read, write or out_of_band
      */
-    public function __invoke(): MapInterface
+    public function __invoke(): Map
     {
         $ready = ($this->select)();
 
-        return Map::of('string', SetInterface::class)
+        return Map::of('string', Set::class)
             ('read', $ready->toRead())
             ('write', $ready->toWrite())
             ('out_of_band', $ready->toOutOfBand());

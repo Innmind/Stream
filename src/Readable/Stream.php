@@ -39,10 +39,10 @@ final class Stream implements Readable, Selectable
     public function read(int $length = null): Str
     {
         if ($this->closed()) {
-            return new Str('');
+            return Str::of('');
         }
 
-        return new Str((string) stream_get_contents(
+        return Str::of((string) stream_get_contents(
             $this->resource,
             $length ?? -1
         ));
@@ -51,10 +51,10 @@ final class Stream implements Readable, Selectable
     public function readLine(): Str
     {
         if ($this->closed()) {
-            return new Str('');
+            return Str::of('');
         }
 
-        return new Str((string) fgets($this->resource));
+        return Str::of((string) fgets($this->resource));
     }
 
     public function position(): Position
@@ -107,6 +107,6 @@ final class Stream implements Readable, Selectable
     {
         $this->rewind();
 
-        return (string) $this->read();
+        return $this->read()->toString();
     }
 }

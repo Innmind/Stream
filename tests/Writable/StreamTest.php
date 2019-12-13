@@ -117,7 +117,7 @@ class StreamTest extends TestCase
         $resource = tmpfile();
         $stream = new Stream($resource);
 
-        $this->assertSame($stream, $stream->write(new Str('foobarbaz')));
+        $this->assertSame($stream, $stream->write(Str::of('foobarbaz')));
         fseek($resource, 0);
         $this->assertSame('foobarbaz', stream_get_contents($resource));
     }
@@ -131,7 +131,7 @@ class StreamTest extends TestCase
 
         $stream
             ->close()
-            ->write(new Str('foo'));
+            ->write(Str::of('foo'));
     }
 
     public function testThrowWhenWriteFailed()
@@ -139,13 +139,23 @@ class StreamTest extends TestCase
         $resource = fopen('php://temp', 'r');
         $stream = new Stream($resource);
 
+        $this->expectException(FailedToWriteToStream::class);
+
+        $stream->write(Str::of('foo'));
+    }
+
+    public function testThrowWhenDataPartiallyWritten()
+    {
+        $resource = fopen('php://temp', 'w');
+        $stream = new Stream($resource);
+
         try {
-            $stream->write($data = new Str('foo'));
+            $stream->write($data = Str::of('🤔')); // because it doesn't use ASCII encoding
             $this->fail('it should throw');
         } catch (DataPartiallyWritten $e) {
             $this->assertSame($data, $e->data());
-            $this->assertSame(0, $e->written());
-            $this->assertSame('0 out of 3 written', $e->getMessage());
+            $this->assertSame(4, $e->written());
+            $this->assertSame('4 out of 1 written', $e->getMessage());
         }
     }
 }

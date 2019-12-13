@@ -7,11 +7,12 @@ use Innmind\Stream\{
     Select,
     Selectable
 };
-use Innmind\TimeContinuum\ElapsedPeriod;
+use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\Immutable\{
-    MapInterface,
-    SetInterface
+    Map,
+    Set
 };
+use function Innmind\Immutable\first;
 use Symfony\Component\Process\Process;
 use PHPUnit\Framework\TestCase;
 
@@ -91,9 +92,9 @@ class SelectTest extends TestCase
     {
         $streams = (new Select(new ElapsedPeriod(0)))();
 
-        $this->assertInstanceOf(MapInterface::class, $streams);
+        $this->assertInstanceOf(Map::class, $streams);
         $this->assertSame('string', (string) $streams->keyType());
-        $this->assertSame(SetInterface::class, (string) $streams->valueType());
+        $this->assertSame(Set::class, (string) $streams->valueType());
         $this->assertCount(3, $streams);
         $this->assertCount(0, $streams->get('read'));
         $this->assertCount(0, $streams->get('write'));
@@ -123,17 +124,17 @@ class SelectTest extends TestCase
 
         $streams = $select();
 
-        $this->assertInstanceOf(MapInterface::class, $streams);
+        $this->assertInstanceOf(Map::class, $streams);
         $this->assertSame('string', (string) $streams->keyType());
-        $this->assertSame(SetInterface::class, (string) $streams->valueType());
+        $this->assertSame(Set::class, (string) $streams->valueType());
         $this->assertCount(3, $streams);
         $this->assertCount(1, $streams->get('read'));
         $this->assertCount(1, $streams->get('write'));
         $this->assertSame(Selectable::class, (string) $streams->get('read')->type());
         $this->assertSame(Selectable::class, (string) $streams->get('write')->type());
         $this->assertSame(Selectable::class, (string) $streams->get('out_of_band')->type());
-        $this->assertSame($read, $streams->get('read')->current());
-        $this->assertSame($write, $streams->get('write')->current());
+        $this->assertSame($read, first($streams->get('read')));
+        $this->assertSame($write, first($streams->get('write')));
 
         $streams = $select();
 

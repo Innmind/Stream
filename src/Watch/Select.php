@@ -10,10 +10,8 @@ use Innmind\Stream\{
 };
 use Innmind\TimeContinuum\ElapsedPeriod;
 use Innmind\Immutable\{
-    MapInterface,
     Map,
-    SetInterface,
-    Set
+    Set,
 };
 
 final class Select implements Watch
@@ -29,9 +27,9 @@ final class Select implements Watch
     public function __construct(ElapsedPeriod $timeout)
     {
         $this->timeout = $timeout;
-        $this->read = new Map('resource', Selectable::class);
-        $this->write = new Map('resource', Selectable::class);
-        $this->outOfBand = new Map('resource', Selectable::class);
+        $this->read = Map::of('resource', Selectable::class);
+        $this->write = Map::of('resource', Selectable::class);
+        $this->outOfBand = Map::of('resource', Selectable::class);
         $this->readResources = [];
         $this->writeResources = [];
         $this->outOfBandResources = [];
@@ -136,9 +134,9 @@ final class Select implements Watch
             $this->outOfBand->empty()
         ) {
             return new Ready(
-                new Set(Selectable::class),
-                new Set(Selectable::class),
-                new Set(Selectable::class)
+                Set::of(Selectable::class),
+                Set::of(Selectable::class),
+                Set::of(Selectable::class)
             );
         }
 
@@ -168,30 +166,30 @@ final class Select implements Watch
         return new Ready(
             \array_reduce(
                 $read,
-                function(SetInterface $carry, $resource): SetInterface {
+                function(Set $carry, $resource): Set {
                     return $carry->add(
                         $this->read->get($resource)
                     );
                 },
-                new Set(Selectable::class)
+                Set::of(Selectable::class)
             ),
             \array_reduce(
                 $write,
-                function(SetInterface $carry, $resource): SetInterface {
+                function(Set $carry, $resource): Set {
                     return $carry->add(
                         $this->write->get($resource)
                     );
                 },
-                new Set(Selectable::class)
+                Set::of(Selectable::class)
             ),
             \array_reduce(
                 $outOfBand,
-                function(SetInterface $carry, $resource): SetInterface {
+                function(Set $carry, $resource): Set {
                     return $carry->add(
                         $this->outOfBand->get($resource)
                     );
                 },
-                new Set(Selectable::class)
+                Set::of(Selectable::class)
             )
         );
     }

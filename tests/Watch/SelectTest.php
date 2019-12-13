@@ -9,11 +9,8 @@ use Innmind\Stream\{
     Watch,
     Selectable
 };
-use Innmind\TimeContinuum\ElapsedPeriod;
-use Innmind\Immutable\{
-    MapInterface,
-    SetInterface
-};
+use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use function Innmind\Immutable\first;
 use Symfony\Component\Process\Process;
 use PHPUnit\Framework\TestCase;
 
@@ -142,9 +139,9 @@ class SelectTest extends TestCase
         $this->assertCount(1, $ready->toRead());
         $this->assertCount(1, $ready->toWrite());
         $this->assertCount(1, $ready->toOutOfBand());
-        $this->assertSame($read, $ready->toRead()->current());
-        $this->assertSame($write, $ready->toWrite()->current());
-        $this->assertSame($outOfBand, $ready->toOutOfBand()->current());
+        $this->assertSame($read, first($ready->toRead()));
+        $this->assertSame($write, first($ready->toWrite()));
+        $this->assertSame($outOfBand, first($ready->toOutOfBand()));
 
         $ready = $select();
 

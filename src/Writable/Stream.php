@@ -42,14 +42,14 @@ final class Stream implements Writable, Selectable
             throw new FailedToWriteToStream;
         }
 
-        $return = @fwrite($this->resource, (string) $data);
+        $written = @fwrite($this->resource, $data->toString());
 
-        if ($return === false) {
+        if ($written === false) {
             throw new FailedToWriteToStream;
         }
 
-        if ($return !== $data->length()) {
-            throw new DataPartiallyWritten($data, $return);
+        if ($written !== $data->length()) {
+            throw new DataPartiallyWritten($data, $written);
         }
 
         return $this;

@@ -43,10 +43,10 @@ class NonBlockingTest extends TestCase
         $text = $stream->read(3);
 
         $this->assertInstanceOf(Str::class, $text);
-        $this->assertSame('foo', (string) $text);
-        $this->assertSame('bar', (string) $stream->read(3));
-        $this->assertSame('baz', (string) $stream->read(3));
-        $this->assertSame('', (string) $stream->read(3));
+        $this->assertSame('foo', $text->toString());
+        $this->assertSame('bar', $stream->read(3)->toString());
+        $this->assertSame('baz', $stream->read(3)->toString());
+        $this->assertSame('', $stream->read(3)->toString());
     }
 
     public function testReadRemaining()
@@ -59,7 +59,7 @@ class NonBlockingTest extends TestCase
             ->read();
 
         $this->assertInstanceOf(Str::class, $text);
-        $this->assertSame('barbaz', (string) $text);
+        $this->assertSame('barbaz', $text->toString());
     }
 
     public function testReadLine()
@@ -70,10 +70,10 @@ class NonBlockingTest extends TestCase
         $line = $stream->readLine();
 
         $this->assertInstanceOf(Str::class, $line);
-        $this->assertSame("foo\n", (string) $line);
-        $this->assertSame("bar\n", (string) $stream->readLine());
-        $this->assertSame('baz', (string) $stream->readLine());
-        $this->assertSame('', (string) $stream->readLine());
+        $this->assertSame("foo\n", $line->toString());
+        $this->assertSame("bar\n", $stream->readLine()->toString());
+        $this->assertSame('baz', $stream->readLine()->toString());
+        $this->assertSame('', $stream->readLine()->toString());
     }
 
     public function testPosition()

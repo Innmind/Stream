@@ -183,7 +183,7 @@ class StreamTest extends TestCase
         fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
-        $this->assertSame('foobarbaz', (string) $stream);
+        $this->assertSame('foobarbaz', $stream->toString());
     }
 
     public function testStringCastOnceClosed()
@@ -191,7 +191,8 @@ class StreamTest extends TestCase
         $resource = tmpfile();
         fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
+        $stream->close();
 
-        $this->assertSame('', (string) $stream->close());
+        $this->assertSame('', $stream->toString());
     }
 }

@@ -94,8 +94,8 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         $this->write->write($data);
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
-        return (string) $this->read;
+        return $this->read->toString();
     }
 }

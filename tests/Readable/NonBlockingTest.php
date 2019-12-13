@@ -152,6 +152,6 @@ class NonBlockingTest extends TestCase
         fwrite($resource, 'foobarbaz');
         $stream = new NonBlocking(new Stream($resource));
 
-        $this->assertSame('foobarbaz', (string) $stream);
+        $this->assertSame('foobarbaz', $stream->toString());
     }
 }

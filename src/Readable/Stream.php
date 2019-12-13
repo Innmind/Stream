@@ -97,7 +97,7 @@ final class Stream implements Readable, Selectable
         return $this->stream->closed();
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
         $this->rewind();
 

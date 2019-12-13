@@ -98,8 +98,8 @@ final class NonBlocking implements Readable, Selectable
         return $this->stream->closed();
     }
 
-    public function __toString(): string
+    public function toString(): string
     {
-        return (string) $this->stream;
+        return $this->stream->toString();
     }
 }

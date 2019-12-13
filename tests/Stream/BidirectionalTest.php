@@ -219,6 +219,6 @@ class BidirectionalTest extends TestCase
         fwrite($resource, 'foobarbaz');
         $stream = new Bidirectional($resource);
 
-        $this->assertSame('foobarbaz', (string) $stream);
+        $this->assertSame('foobarbaz', $stream->toString());
     }
 }

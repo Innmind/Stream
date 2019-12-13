@@ -12,10 +12,10 @@ final class DataPartiallyWritten extends RuntimeException
 
     public function __construct(Str $data, int $written)
     {
-        parent::__construct(sprintf(
+        parent::__construct(\sprintf(
             '%s out of %s written',
             $written,
-            $data->length()
+            $data->length(),
         ));
         $this->data = $data;
         $this->written = $written;

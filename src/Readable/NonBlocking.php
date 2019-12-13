@@ -10,7 +10,7 @@ use Innmind\Stream\{
     Stream\Position,
     Stream\Size,
     Stream\Position\Mode,
-    Exception\NonBlockingModeNotSupported
+    Exception\NonBlockingModeNotSupported,
 };
 use Innmind\Immutable\Str;
 
@@ -21,14 +21,14 @@ final class NonBlocking implements Readable, Selectable
     public function __construct(Selectable $selectable)
     {
         $resource = $selectable->resource();
-        $return = stream_set_blocking($resource, false);
+        $return = \stream_set_blocking($resource, false);
 
         if ($return === false) {
             throw new NonBlockingModeNotSupported;
         }
 
-        stream_set_write_buffer($resource, 0);
-        stream_set_read_buffer($resource, 0);
+        \stream_set_write_buffer($resource, 0);
+        \stream_set_read_buffer($resource, 0);
 
         if ($selectable instanceof Readable) {
             $this->stream = $selectable;

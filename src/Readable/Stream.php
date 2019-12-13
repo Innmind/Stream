@@ -42,9 +42,9 @@ final class Stream implements Readable, Selectable
             return Str::of('');
         }
 
-        return Str::of((string) stream_get_contents(
+        return Str::of((string) \stream_get_contents(
             $this->resource,
-            $length ?? -1
+            $length ?? -1,
         ));
     }
 
@@ -54,7 +54,7 @@ final class Stream implements Readable, Selectable
             return Str::of('');
         }
 
-        return Str::of((string) fgets($this->resource));
+        return Str::of((string) \fgets($this->resource));
     }
 
     public function position(): Position

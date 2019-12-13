@@ -9,7 +9,7 @@ use Innmind\Stream\{
     Bidirectional as BidirectionalInterface,
     Selectable,
     Stream as StreamInterface,
-    Stream\Position\Mode
+    Stream\Position\Mode,
 };
 use Innmind\Immutable\Str;
 
@@ -22,7 +22,7 @@ final class Bidirectional implements BidirectionalInterface, Selectable
     public function __construct($resource)
     {
         $this->read = new Readable\NonBlocking(
-            new Readable\Stream($resource)
+            new Readable\Stream($resource),
         );
         $this->write = new Writable\Stream($resource);
         $this->resource = $resource;

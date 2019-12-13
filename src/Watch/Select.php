@@ -38,16 +38,16 @@ final class Select implements Watch
     public function forRead(Selectable $read, Selectable ...$reads): Watch
     {
         $self = clone $this;
-        $self->read = $self->read->put(
+        $self->read = ($self->read)(
             $read->resource(),
-            $read
+            $read,
         );
         $self->readResources[] = $read->resource();
 
         foreach ($reads as $read) {
-            $self->read = $self->read->put(
+            $self->read = ($self->read)(
                 $read->resource(),
-                $read
+                $read,
             );
             $self->readResources[] = $read->resource();
         }
@@ -58,16 +58,16 @@ final class Select implements Watch
     public function forWrite(Selectable $write, Selectable ...$writes): Watch
     {
         $self = clone $this;
-        $self->write = $self->write->put(
+        $self->write = ($self->write)(
             $write->resource(),
-            $write
+            $write,
         );
         $self->writeResources[] = $write->resource();
 
         foreach ($writes as $write) {
-            $self->write = $self->write->put(
+            $self->write = ($self->write)(
                 $write->resource(),
-                $write
+                $write,
             );
             $self->writeResources[] = $write->resource();
         }
@@ -80,16 +80,16 @@ final class Select implements Watch
         Selectable ...$outOfBands
     ): Watch {
         $self = clone $this;
-        $self->outOfBand = $self->outOfBand->put(
+        $self->outOfBand = ($self->outOfBand)(
             $outOfBand->resource(),
-            $outOfBand
+            $outOfBand,
         );
         $self->outOfBandResources[] = $outOfBand->resource();
 
         foreach ($outOfBands as $outOfBand) {
-            $self->outOfBand = $self->outOfBand->put(
+            $self->outOfBand = ($self->outOfBand)(
                 $outOfBand->resource(),
-                $outOfBand
+                $outOfBand,
             );
             $self->outOfBandResources[] = $outOfBand->resource();
         }
@@ -108,19 +108,19 @@ final class Select implements Watch
             $self->readResources,
             static function($read) use ($resource): bool {
                 return $read !== $resource;
-            }
+            },
         );
         $self->writeResources = \array_filter(
             $self->writeResources,
             static function($write) use ($resource): bool {
                 return $write !== $resource;
-            }
+            },
         );
         $self->outOfBandResources = \array_filter(
             $self->outOfBandResources,
             static function($outOfBand) use ($resource): bool {
                 return $outOfBand !== $resource;
-            }
+            },
         );
 
         return $self;
@@ -136,7 +136,7 @@ final class Select implements Watch
             return new Ready(
                 Set::of(Selectable::class),
                 Set::of(Selectable::class),
-                Set::of(Selectable::class)
+                Set::of(Selectable::class),
             );
         }
 
@@ -151,7 +151,7 @@ final class Select implements Watch
             $write,
             $outOfBand,
             $seconds,
-            $microseconds
+            $microseconds,
         );
 
         if ($return === false) {
@@ -159,7 +159,7 @@ final class Select implements Watch
 
             throw new SelectFailed(
                 $error['message'],
-                $error['type']
+                $error['type'],
             );
         }
 
@@ -168,29 +168,29 @@ final class Select implements Watch
                 $read,
                 function(Set $carry, $resource): Set {
                     return $carry->add(
-                        $this->read->get($resource)
+                        $this->read->get($resource),
                     );
                 },
-                Set::of(Selectable::class)
+                Set::of(Selectable::class),
             ),
             \array_reduce(
                 $write,
                 function(Set $carry, $resource): Set {
                     return $carry->add(
-                        $this->write->get($resource)
+                        $this->write->get($resource),
                     );
                 },
-                Set::of(Selectable::class)
+                Set::of(Selectable::class),
             ),
             \array_reduce(
                 $outOfBand,
                 function(Set $carry, $resource): Set {
                     return $carry->add(
-                        $this->outOfBand->get($resource)
+                        $this->outOfBand->get($resource),
                     );
                 },
-                Set::of(Selectable::class)
-            )
+                Set::of(Selectable::class),
+            ),
         );
     }
 }

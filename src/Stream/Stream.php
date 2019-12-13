@@ -11,7 +11,7 @@ use Innmind\Stream\{
     Exception\InvalidArgumentException,
     Exception\UnknownSize,
     Exception\FailedToCloseStream,
-    Exception\PositionNotSeekable
+    Exception\PositionNotSeekable,
 };
 
 final class Stream implements StreamInterface
@@ -23,20 +23,20 @@ final class Stream implements StreamInterface
 
     public function __construct($resource)
     {
-        if (!is_resource($resource) || get_resource_type($resource) !== 'stream') {
+        if (!\is_resource($resource) || \get_resource_type($resource) !== 'stream') {
             throw new InvalidArgumentException;
         }
 
         $this->resource = $resource;
-        $meta = stream_get_meta_data($resource);
+        $meta = \stream_get_meta_data($resource);
 
-        if ($meta['seekable'] && substr($meta['uri'], 0, 9) !== 'php://std') {
+        if ($meta['seekable'] && \substr($meta['uri'], 0, 9) !== 'php://std') {
             //stdin, stdout and stderr are not seekable
             $this->seekable = true;
             $this->rewind();
         }
 
-        $stats = fstat($resource);
+        $stats = \fstat($resource);
 
         if (isset($stats['size'])) {
             $this->size = new Size($stats['size']);
@@ -47,11 +47,11 @@ final class Stream implements StreamInterface
     {
         if ($this->closed()) {
             return new Position(
-                $this->size ? $this->size->toInt() : 0
+                $this->size ? $this->size->toInt() : 0,
             );
         }
 
-        return new Position(ftell($this->resource));
+        return new Position(\ftell($this->resource));
     }
 
     public function seek(Position $position, Mode $mode = null): void
@@ -64,10 +64,10 @@ final class Stream implements StreamInterface
             return;
         }
 
-        $status = fseek(
+        $status = \fseek(
             $this->resource,
             $position->toInt(),
-            ($mode ?? Mode::fromStart())->toInt()
+            ($mode ?? Mode::fromStart())->toInt(),
         );
 
         if ($status === -1) {
@@ -86,7 +86,7 @@ final class Stream implements StreamInterface
             return true;
         }
 
-        return feof($this->resource);
+        return \feof($this->resource);
     }
 
     public function size(): Size
@@ -109,7 +109,7 @@ final class Stream implements StreamInterface
             return;
         }
 
-        $return = fclose($this->resource);
+        $return = \fclose($this->resource);
 
         if ($return = false) {
             throw new FailedToCloseStream;
@@ -120,6 +120,6 @@ final class Stream implements StreamInterface
 
     public function closed(): bool
     {
-        return $this->closed || !is_resource($this->resource);
+        return $this->closed || !\is_resource($this->resource);
     }
 }

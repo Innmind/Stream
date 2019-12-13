@@ -17,12 +17,12 @@ final class Mode
 
     public static function fromStart(): self
     {
-        return self::$set ?? self::$set = new self(SEEK_SET);
+        return self::$set ?? self::$set = new self(\SEEK_SET);
     }
 
     public static function fromCurrentPosition(): self
     {
-        return self::$cur ?? self::$cur = new self(SEEK_CUR);
+        return self::$cur ?? self::$cur = new self(\SEEK_CUR);
     }
 
     public function toInt(): int

@@ -65,8 +65,9 @@ class StreamTest extends TestCase
         $resource = tmpfile();
         fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
+        $stream->close();
 
-        $this->assertSame('', $stream->close()->read()->toString());
+        $this->assertSame('', $stream->read()->toString());
     }
 
     public function testReadRemaining()
@@ -74,9 +75,8 @@ class StreamTest extends TestCase
         $resource = tmpfile();
         fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
-        $text = $stream
-            ->seek(new Position(3))
-            ->read();
+        $stream->seek(new Position(3));
+        $text = $stream->read();
 
         $this->assertInstanceOf(Str::class, $text);
         $this->assertSame('barbaz', $text->toString());
@@ -101,8 +101,9 @@ class StreamTest extends TestCase
         $resource = tmpfile();
         fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
+        $stream->close();
 
-        $this->assertSame('', $stream->close()->readLine()->toString());
+        $this->assertSame('', $stream->readLine()->toString());
     }
 
     public function testPosition()
@@ -124,11 +125,11 @@ class StreamTest extends TestCase
         fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
-        $this->assertSame($stream, $stream->seek(new Position(3)));
+        $this->assertNull($stream->seek(new Position(3)));
         $this->assertSame(3, $stream->position()->toInt());
-        $this->assertSame($stream, $stream->seek(new Position(3), Mode::fromCurrentPosition()));
+        $this->assertNull($stream->seek(new Position(3), Mode::fromCurrentPosition()));
         $this->assertSame(6, $stream->position()->toInt());
-        $this->assertSame($stream, $stream->seek(new Position(3)));
+        $this->assertNull($stream->seek(new Position(3)));
         $this->assertSame(3, $stream->position()->toInt());
     }
 
@@ -139,7 +140,7 @@ class StreamTest extends TestCase
         $stream = new Stream($resource);
         $stream->seek(new Position(3));
 
-        $this->assertSame($stream, $stream->rewind());
+        $this->assertNull($stream->rewind());
         $this->assertSame(0, $stream->position()->toInt());
     }
 
@@ -172,7 +173,7 @@ class StreamTest extends TestCase
         $stream = new Stream($resource);
 
         $this->assertFalse($stream->closed());
-        $this->assertSame($stream, $stream->close());
+        $this->assertNull($stream->close());
         $this->assertTrue($stream->closed());
     }
 

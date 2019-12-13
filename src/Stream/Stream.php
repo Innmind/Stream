@@ -54,14 +54,14 @@ final class Stream implements StreamInterface
         return new Position(ftell($this->resource));
     }
 
-    public function seek(Position $position, Mode $mode = null): StreamInterface
+    public function seek(Position $position, Mode $mode = null): void
     {
         if (!$this->seekable) {
             throw new PositionNotSeekable;
         }
 
         if ($this->closed()) {
-            return $this;
+            return;
         }
 
         $status = fseek(
@@ -73,15 +73,11 @@ final class Stream implements StreamInterface
         if ($status === -1) {
             throw new PositionNotSeekable;
         }
-
-        return $this;
     }
 
-    public function rewind(): StreamInterface
+    public function rewind(): void
     {
         $this->seek(new Position(0));
-
-        return $this;
     }
 
     public function end(): bool
@@ -107,10 +103,10 @@ final class Stream implements StreamInterface
         return $this->size instanceof Size;
     }
 
-    public function close(): StreamInterface
+    public function close(): void
     {
         if ($this->closed()) {
-            return $this;
+            return;
         }
 
         $return = fclose($this->resource);
@@ -120,8 +116,6 @@ final class Stream implements StreamInterface
         }
 
         $this->closed = true;
-
-        return $this;
     }
 
     public function closed(): bool

@@ -54,9 +54,8 @@ class NonBlockingTest extends TestCase
         $resource = tmpfile();
         fwrite($resource, 'foobarbaz');
         $stream = new NonBlocking(new Stream($resource));
-        $text = $stream
-            ->seek(new Position(3))
-            ->read();
+        $stream->seek(new Position(3));
+        $text = $stream->read();
 
         $this->assertInstanceOf(Str::class, $text);
         $this->assertSame('barbaz', $text->toString());
@@ -95,11 +94,11 @@ class NonBlockingTest extends TestCase
         fwrite($resource, 'foobarbaz');
         $stream = new NonBlocking(new Stream($resource));
 
-        $this->assertSame($stream, $stream->seek(new Position(3)));
+        $this->assertNull($stream->seek(new Position(3)));
         $this->assertSame(3, $stream->position()->toInt());
-        $this->assertSame($stream, $stream->seek(new Position(3), Mode::fromCurrentPosition()));
+        $this->assertNull($stream->seek(new Position(3), Mode::fromCurrentPosition()));
         $this->assertSame(6, $stream->position()->toInt());
-        $this->assertSame($stream, $stream->seek(new Position(3)));
+        $this->assertNull($stream->seek(new Position(3)));
         $this->assertSame(3, $stream->position()->toInt());
     }
 
@@ -110,7 +109,7 @@ class NonBlockingTest extends TestCase
         $stream = new NonBlocking(new Stream($resource));
         $stream->seek(new Position(3));
 
-        $this->assertSame($stream, $stream->rewind());
+        $this->assertNull($stream->rewind());
         $this->assertSame(0, $stream->position()->toInt());
     }
 
@@ -143,7 +142,7 @@ class NonBlockingTest extends TestCase
         $stream = new NonBlocking(new Stream($resource));
 
         $this->assertFalse($stream->closed());
-        $this->assertSame($stream, $stream->close());
+        $this->assertNull($stream->close());
         $this->assertTrue($stream->closed());
     }
 

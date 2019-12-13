@@ -36,7 +36,7 @@ final class Stream implements Writable, Selectable
         return $this->resource;
     }
 
-    public function write(Str $data): Writable
+    public function write(Str $data): void
     {
         if ($this->closed()) {
             throw new FailedToWriteToStream;
@@ -51,8 +51,6 @@ final class Stream implements Writable, Selectable
         if ($written !== $data->length()) {
             throw new DataPartiallyWritten($data, $written);
         }
-
-        return $this;
     }
 
     public function position(): Position
@@ -60,18 +58,14 @@ final class Stream implements Writable, Selectable
         return $this->stream->position();
     }
 
-    public function seek(Position $position, Mode $mode = null): StreamInterface
+    public function seek(Position $position, Mode $mode = null): void
     {
         $this->stream->seek($position, $mode);
-
-        return $this;
     }
 
-    public function rewind(): StreamInterface
+    public function rewind(): void
     {
         $this->stream->rewind();
-
-        return $this;
     }
 
     public function end(): bool
@@ -89,11 +83,9 @@ final class Stream implements Writable, Selectable
         return $this->stream->knowsSize();
     }
 
-    public function close(): StreamInterface
+    public function close(): void
     {
         $this->stream->close();
-
-        return $this;
     }
 
     public function closed(): bool

@@ -36,11 +36,9 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->resource;
     }
 
-    public function close(): StreamInterface
+    public function close(): void
     {
         $this->write->close();
-
-        return $this;
     }
 
     public function closed(): bool
@@ -53,18 +51,14 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->read->position();
     }
 
-    public function seek(Position $position, Mode $mode = null): StreamInterface
+    public function seek(Position $position, Mode $mode = null): void
     {
         $this->read->seek($position, $mode);
-
-        return $this;
     }
 
-    public function rewind(): StreamInterface
+    public function rewind(): void
     {
         $this->read->rewind();
-
-        return $this;
     }
 
     public function end(): bool
@@ -95,11 +89,9 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->read->readLine();
     }
 
-    public function write(Str $data): Writable
+    public function write(Str $data): void
     {
         $this->write->write($data);
-
-        return $this;
     }
 
     public function __toString(): string

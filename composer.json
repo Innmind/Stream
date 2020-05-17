@@ -22,7 +22,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Innmind\\Stream\\": "src/"
+            "Innmind\\Stream\\": "src/",
+            "Fixtures\\Innmind\\Stream\\": "fixtures/"
         }
     },
     "autoload-dev": {
@@ -33,6 +34,7 @@
     "require-dev": {
         "phpunit/phpunit": "~8.0",
         "symfony/process": "^4.0",
-        "vimeo/psalm": "^3.7"
+        "vimeo/psalm": "^3.7",
+        "innmind/black-box": "^4.8"
     }
 }

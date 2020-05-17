@@ -117,6 +117,7 @@ final class Stream implements StreamInterface
             return;
         }
 
+        /** @psalm-suppress InvalidPropertyAssignmentValue */
         $return = \fclose($this->resource);
 
         if ($return === false) {

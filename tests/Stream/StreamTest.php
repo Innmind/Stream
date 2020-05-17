@@ -58,7 +58,7 @@ class StreamTest extends TestCase
         $stream = new Stream($resource);
         $stream->close();
 
-        $this->assertSame(9, $stream->position()->toInt());
+        $this->assertSame(0, $stream->position()->toInt());
 
         $stream = new Stream(stream_socket_server('tcp://127.0.0.1:1235'));
         $stream->close();
@@ -112,7 +112,7 @@ class StreamTest extends TestCase
         $stream->close();
 
         $this->assertNull($stream->rewind());
-        $this->assertSame(9, $stream->position()->toInt());
+        $this->assertSame(0, $stream->position()->toInt());
     }
 
     public function testEnd()

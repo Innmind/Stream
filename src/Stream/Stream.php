@@ -54,9 +54,7 @@ final class Stream implements StreamInterface
     public function position(): Position
     {
         if ($this->closed()) {
-            return new Position(
-                $this->size ? $this->size->toInt() : 0,
-            );
+            return new Position(0);
         }
 
         return new Position(\ftell($this->resource));

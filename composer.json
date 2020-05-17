@@ -23,7 +23,8 @@
     "autoload": {
         "psr-4": {
             "Innmind\\Stream\\": "src/",
-            "Fixtures\\Innmind\\Stream\\": "fixtures/"
+            "Fixtures\\Innmind\\Stream\\": "fixtures/",
+            "Properties\\Innmind\\Stream\\": "properties/"
         }
     },
     "autoload-dev": {

@@ -70,6 +70,7 @@ final class Stream implements StreamInterface
             return;
         }
 
+        $previous = $this->position();
         $status = \fseek(
             $this->resource,
             $position->toInt(),
@@ -77,6 +78,12 @@ final class Stream implements StreamInterface
         );
 
         if ($status === -1) {
+            \fseek(
+                $this->resource,
+                $previous->toInt(),
+                Mode::fromStart()->toInt(),
+            );
+
             throw new PositionNotSeekable;
         }
     }

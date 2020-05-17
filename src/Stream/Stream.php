@@ -119,7 +119,7 @@ final class Stream implements StreamInterface
 
         $return = \fclose($this->resource);
 
-        if ($return = false) {
+        if ($return === false) {
             throw new FailedToCloseStream;
         }
 

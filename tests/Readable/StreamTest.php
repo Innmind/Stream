@@ -15,9 +15,14 @@ use Innmind\Stream\{
 use Innmind\Url\Path;
 use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
+use Innmind\BlackBox\PHPUnit\BlackBox;
+use Fixtures\Innmind\Stream\Readable as Fixture;
+use Properties\Innmind\Stream\Readable as PReadable;
 
 class StreamTest extends TestCase
 {
+    use BlackBox;
+
     public function testInterface()
     {
         $stream = new Stream(tmpfile());
@@ -214,5 +219,42 @@ class StreamTest extends TestCase
 
         $this->assertInstanceOf(Stream::class, $stream);
         $this->assertSame('foo', $stream->toString());
+    }
+
+    /**
+     * @dataProvider properties
+     */
+    public function testHoldProperty($property)
+    {
+        $this
+            ->forAll(
+                $property,
+                Fixture::any(),
+            )
+            ->filter(function($property, $stream) {
+                return $property->applicableTo($stream);
+            })
+            ->then(function($property, $stream) {
+                $property->ensureHeldBy($stream);
+            });
+    }
+
+    public function testHoldProperties()
+    {
+        $this
+            ->forAll(
+                PReadable::properties(),
+                Fixture::any(),
+            )
+            ->then(function($properties, $stream) {
+                $properties->ensureHeldBy($stream);
+            });
+    }
+
+    public function properties(): iterable
+    {
+        foreach (PReadable::list() as $property) {
+            yield [$property];
+        }
     }
 }

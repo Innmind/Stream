@@ -54,9 +54,7 @@ final class Stream implements StreamInterface
     public function position(): Position
     {
         if ($this->closed()) {
-            return new Position(
-                $this->size ? $this->size->toInt() : 0,
-            );
+            return new Position(0);
         }
 
         return new Position(\ftell($this->resource));
@@ -72,6 +70,7 @@ final class Stream implements StreamInterface
             return;
         }
 
+        $previous = $this->position();
         $status = \fseek(
             $this->resource,
             $position->toInt(),
@@ -79,6 +78,12 @@ final class Stream implements StreamInterface
         );
 
         if ($status === -1) {
+            \fseek(
+                $this->resource,
+                $previous->toInt(),
+                Mode::fromStart()->toInt(),
+            );
+
             throw new PositionNotSeekable;
         }
     }
@@ -117,9 +122,10 @@ final class Stream implements StreamInterface
             return;
         }
 
+        /** @psalm-suppress InvalidPropertyAssignmentValue */
         $return = \fclose($this->resource);
 
-        if ($return = false) {
+        if ($return === false) {
             throw new FailedToCloseStream;
         }
 

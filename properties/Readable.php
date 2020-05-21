@@ -57,6 +57,10 @@ final class Readable
             Set\Property::of(Readable\ReadingRestFlagStreamEnd::class),
             Set\Property::of(Readable\ReadingRestAlwaysReturnAValue::class),
             Set\Property::of(Readable\ReadingLineAlwaysReturnAValue::class),
+            Set\Property::of(
+                Readable\ReadingChunkAlwaysReturnSameValue::class,
+                Set\Integers::between(1, 100),
+            ),
         ];
     }
 }

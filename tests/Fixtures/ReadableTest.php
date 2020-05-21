@@ -23,4 +23,13 @@ class ReadableTest extends TestCase
                 $this->assertInstanceOf(ReadableInterface::class, $stream);
             });
     }
+
+    public function testGenerateLargeStreams()
+    {
+        $this
+            ->forAll(Readable::large())
+            ->then(function($stream) {
+                $this->assertInstanceOf(ReadableInterface::class, $stream);
+            });
+    }
 }

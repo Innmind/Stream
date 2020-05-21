@@ -16,13 +16,44 @@ final class Readable
      */
     public static function any(): Set
     {
-        $stream = Set\Decorate::mutable(
+        return self::alterPosition(Set\Decorate::mutable(
             static fn(string $string): Stream => Stream::ofContent($string),
             Set\Unicode::strings(),
-        );
+        ));
+    }
 
+    /**
+     * Simulate large files
+     *
+     * @return Set<Stream>
+     */
+    public static function large(): Set
+    {
+        return self::alterPosition(Set\Composite::mutable(
+            static function(string $chunk, int $repeat): Stream {
+                $resource = \fopen('php://temp', 'r+');
+
+                // repeating the same chunk as if we let BlackBox generate a
+                // sequence of strings it would all be in memory resulting in an
+                // OOM error
+                for ($i = 0; $i < $repeat; $i++) {
+                    \fwrite($resource, $chunk);
+                }
+
+                return new Stream($resource);
+            },
+            Set\Unicode::strings(),
+            Set\Integers::between(1, 100),
+        ));
+    }
+
+    /**
+     * @return Set<Stream>
+     */
+    private static function alterPosition(Set $streams): Set
+    {
         return new Set\Either(
-            $stream,
+            $streams,
             Set\Composite::mutable(
                 static function(Stream $stream, int $position): Stream {
                     $stream->seek(
@@ -31,7 +62,7 @@ final class Readable
 
                     return $stream;
                 },
-                $stream,
+                $streams,
                 Set\Integers::between(1, 100),
             ),
         );

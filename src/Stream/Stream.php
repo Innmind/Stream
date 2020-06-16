@@ -71,10 +71,14 @@ final class Stream implements StreamInterface
         }
 
         $previous = $this->position();
+        $mode ??= Mode::fromStart();
+
+        $this->assertSeekable($position, $mode);
+
         $status = \fseek(
             $this->resource,
             $position->toInt(),
-            ($mode ?? Mode::fromStart())->toInt(),
+            $mode->toInt(),
         );
 
         if ($status === -1) {
@@ -136,5 +140,29 @@ final class Stream implements StreamInterface
     {
         /** @psalm-suppress DocblockTypeContradiction */
         return $this->closed || !\is_resource($this->resource);
+    }
+
+    /**
+     * @throws PositionNotSeekable
+     */
+    private function assertSeekable(Position $position, Mode $mode): void
+    {
+        if (!$this->knowsSize()) {
+            return;
+        }
+
+        switch ($mode) {
+            case Mode::fromCurrentPosition():
+                $targetPosition = $this->position()->toInt() + $position->toInt();
+                break;
+
+            default: // fromStart
+                $targetPosition = $position->toInt();
+                break;
+        }
+
+        if ($targetPosition > $this->size()->toInt()) {
+            throw new PositionNotSeekable;
+        }
     }
 }

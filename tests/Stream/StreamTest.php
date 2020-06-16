@@ -231,4 +231,15 @@ class StreamTest extends TestCase
         (new Stream(fopen('php://stderr', 'rb')))
             ->seek(new Position(0));
     }
+
+    public function testThrowWhenSeekingAboveResourceSizeEvenForConcreteFiles()
+    {
+        $path = tempnam(sys_get_temp_dir(), 'lazy_stream');
+        file_put_contents($path, 'lorem ipsum dolor');
+        $stream = new Stream(\fopen($path, 'r'));
+
+        $this->expectException(PositionNotSeekable::class);
+
+        $stream->seek(new Position(42));
+    }
 }

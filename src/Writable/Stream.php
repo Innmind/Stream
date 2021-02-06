@@ -32,9 +32,6 @@ final class Stream implements Writable, Selectable
         $this->resource = $resource;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function resource()
     {
         return $this->resource;

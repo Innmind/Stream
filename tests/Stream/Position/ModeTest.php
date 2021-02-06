@@ -15,7 +15,7 @@ class ModeTest extends TestCase
         $this->assertSame(Mode::fromStart(), Mode::fromStart());
         $this->assertSame(Mode::fromCurrentPosition(), Mode::fromCurrentPosition());
         $this->assertNotSame(Mode::fromStart(), Mode::fromCurrentPosition());
-        $this->assertSame(SEEK_SET, Mode::fromStart()->toInt());
-        $this->assertSame(SEEK_CUR, Mode::fromCurrentPosition()->toInt());
+        $this->assertSame(\SEEK_SET, Mode::fromStart()->toInt());
+        $this->assertSame(\SEEK_CUR, Mode::fromCurrentPosition()->toInt());
     }
 }

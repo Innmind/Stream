@@ -25,7 +25,7 @@ class StreamTest extends TestCase
 
     public function testInterface()
     {
-        $stream = new Stream(tmpfile());
+        $stream = new Stream(\tmpfile());
 
         $this->assertInstanceOf(Readable::class, $stream);
         $this->assertInstanceOf(Selectable::class, $stream);
@@ -42,20 +42,20 @@ class StreamTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new Stream(imagecreatetruecolor(42, 42));
+        new Stream(\imagecreatetruecolor(42, 42));
     }
 
     public function testResource()
     {
-        $expected = tmpfile();
+        $expected = \tmpfile();
 
         $this->assertSame($expected, (new Stream($expected))->resource());
     }
 
     public function testRead()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
         $text = $stream->read(3);
 
@@ -68,8 +68,8 @@ class StreamTest extends TestCase
 
     public function testReadOnceClosed()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
         $stream->close();
 
@@ -78,8 +78,8 @@ class StreamTest extends TestCase
 
     public function testReadRemaining()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
         $stream->seek(new Position(3));
         $text = $stream->read();
@@ -90,8 +90,8 @@ class StreamTest extends TestCase
 
     public function testReadLine()
     {
-        $resource = tmpfile();
-        fwrite($resource, "foo\nbar\nbaz");
+        $resource = \tmpfile();
+        \fwrite($resource, "foo\nbar\nbaz");
         $stream = new Stream($resource);
         $line = $stream->readLine();
 
@@ -104,8 +104,8 @@ class StreamTest extends TestCase
 
     public function testReadLineOnceClosed()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
         $stream->close();
 
@@ -114,10 +114,10 @@ class StreamTest extends TestCase
 
     public function testPosition()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
 
-        $this->assertSame(9, ftell($resource));
+        $this->assertSame(9, \ftell($resource));
 
         $stream = new Stream($resource);
 
@@ -127,8 +127,8 @@ class StreamTest extends TestCase
 
     public function testSeek()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
         $this->assertNull($stream->seek(new Position(3)));
@@ -141,8 +141,8 @@ class StreamTest extends TestCase
 
     public function testRewind()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
         $stream->seek(new Position(3));
 
@@ -152,8 +152,8 @@ class StreamTest extends TestCase
 
     public function testEnd()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
         $this->assertFalse($stream->end());
@@ -163,8 +163,8 @@ class StreamTest extends TestCase
 
     public function testSize()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
         $this->assertTrue($stream->knowsSize());
@@ -174,8 +174,8 @@ class StreamTest extends TestCase
 
     public function testClose()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
         $this->assertFalse($stream->closed());
@@ -185,8 +185,8 @@ class StreamTest extends TestCase
 
     public function testStringCast()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
         $this->assertSame('foobarbaz', $stream->toString());
@@ -194,8 +194,8 @@ class StreamTest extends TestCase
 
     public function testStringCastOnceClosed()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
         $stream->close();
 
@@ -204,8 +204,8 @@ class StreamTest extends TestCase
 
     public function testOpen()
     {
-        $file = tempnam(sys_get_temp_dir(), '');
-        file_put_contents($file, 'watev');
+        $file = \tempnam(\sys_get_temp_dir(), '');
+        \file_put_contents($file, 'watev');
 
         $stream = Stream::open(Path::of($file));
 
@@ -231,10 +231,10 @@ class StreamTest extends TestCase
                 $property,
                 Fixture::any(),
             )
-            ->filter(function($property, $stream) {
+            ->filter(static function($property, $stream) {
                 return $property->applicableTo($stream);
             })
-            ->then(function($property, $stream) {
+            ->then(static function($property, $stream) {
                 $property->ensureHeldBy($stream);
             });
     }
@@ -246,7 +246,7 @@ class StreamTest extends TestCase
                 PReadable::properties(),
                 Fixture::any(),
             )
-            ->then(function($properties, $stream) {
+            ->then(static function($properties, $stream) {
                 $properties->ensureHeldBy($stream);
             });
     }

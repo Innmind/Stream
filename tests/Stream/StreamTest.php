@@ -12,14 +12,13 @@ use Innmind\Stream\{
     Exception\PositionNotSeekable,
     Exception\InvalidArgumentException
 };
-use Innmind\Immutable\Str;
 use PHPUnit\Framework\TestCase;
 
 class StreamTest extends TestCase
 {
     public function testInterface()
     {
-        $stream = new Stream(tmpfile());
+        $stream = new Stream(\tmpfile());
 
         $this->assertInstanceOf(StreamInterface::class, $stream);
     }
@@ -35,15 +34,15 @@ class StreamTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new Stream(imagecreatetruecolor(42, 42));
+        new Stream(\imagecreatetruecolor(42, 42));
     }
 
     public function testPosition()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
 
-        $this->assertSame(9, ftell($resource));
+        $this->assertSame(9, \ftell($resource));
 
         $stream = new Stream($resource);
 
@@ -53,14 +52,14 @@ class StreamTest extends TestCase
 
     public function testPositionOnceClosed()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
         $stream->close();
 
         $this->assertSame(0, $stream->position()->toInt());
 
-        $stream = new Stream(stream_socket_server('tcp://127.0.0.1:1235'));
+        $stream = new Stream(\stream_socket_server('tcp://127.0.0.1:1235'));
         $stream->close();
 
         $this->assertSame(0, $stream->position()->toInt());
@@ -68,8 +67,8 @@ class StreamTest extends TestCase
 
     public function testSeek()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
         $this->assertNull($stream->seek(new Position(3)));
@@ -82,8 +81,8 @@ class StreamTest extends TestCase
 
     public function testSeekOnceClosed()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
 
         $stream = new Stream($resource);
         $stream->close();
@@ -93,8 +92,8 @@ class StreamTest extends TestCase
 
     public function testRewind()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
         $stream->seek(new Position(3));
 
@@ -104,8 +103,8 @@ class StreamTest extends TestCase
 
     public function testRewindOnceClosed()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
 
         $stream = new Stream($resource);
         $stream->seek(new Position(2));
@@ -117,19 +116,19 @@ class StreamTest extends TestCase
 
     public function testEnd()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
         $this->assertFalse($stream->end());
-        fread($resource, 10);
+        \fread($resource, 10);
         $this->assertTrue($stream->end());
     }
 
     public function testEndOnceClosed()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
 
         $stream = new Stream($resource);
         $stream->close();
@@ -139,8 +138,8 @@ class StreamTest extends TestCase
 
     public function testSize()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
         $this->assertTrue($stream->knowsSize());
@@ -150,8 +149,8 @@ class StreamTest extends TestCase
 
     public function testClose()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
         $this->assertFalse($stream->closed());
@@ -161,19 +160,19 @@ class StreamTest extends TestCase
 
     public function testCloseFromOutside()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
-        fclose($resource);
+        \fclose($resource);
 
         $this->assertTrue($stream->closed());
     }
 
     public function testCloseTwice()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
 
         $stream = new Stream($resource);
         $stream->close();
@@ -183,8 +182,8 @@ class StreamTest extends TestCase
 
     public function testThrowWhenNotSeekable()
     {
-        $resource = fopen('php://temp', 'r+');
-        fwrite($resource, 'foobarbaz');
+        $resource = \fopen('php://temp', 'r+');
+        \fwrite($resource, 'foobarbaz');
 
         $stream = new Stream($resource);
 
@@ -195,47 +194,47 @@ class StreamTest extends TestCase
 
     public function testDoesntTryToRewindStdin()
     {
-        $this->assertInstanceOf(Stream::class, new Stream(fopen('php://stdin', 'rb')));
+        $this->assertInstanceOf(Stream::class, new Stream(\fopen('php://stdin', 'rb')));
     }
 
     public function testThrowWhenTryingToSeekStdin()
     {
         $this->expectException(PositionNotSeekable::class);
 
-        (new Stream(fopen('php://stdin', 'rb')))
+        (new Stream(\fopen('php://stdin', 'rb')))
             ->seek(new Position(0));
     }
 
     public function testDoesntTryToRewindStdout()
     {
-        $this->assertInstanceOf(Stream::class, new Stream(fopen('php://stdout', 'rb')));
+        $this->assertInstanceOf(Stream::class, new Stream(\fopen('php://stdout', 'rb')));
     }
 
     public function testThrowWhenTryingToSeekStdout()
     {
         $this->expectException(PositionNotSeekable::class);
 
-        (new Stream(fopen('php://stdout', 'rb')))
+        (new Stream(\fopen('php://stdout', 'rb')))
             ->seek(new Position(0));
     }
 
     public function testDoesntTryToRewindStderr()
     {
-        $this->assertInstanceOf(Stream::class, new Stream(fopen('php://stderr', 'rb')));
+        $this->assertInstanceOf(Stream::class, new Stream(\fopen('php://stderr', 'rb')));
     }
 
     public function testThrowWhenTryingToSeekStderr()
     {
         $this->expectException(PositionNotSeekable::class);
 
-        (new Stream(fopen('php://stderr', 'rb')))
+        (new Stream(\fopen('php://stderr', 'rb')))
             ->seek(new Position(0));
     }
 
     public function testThrowWhenSeekingAboveResourceSizeEvenForConcreteFiles()
     {
-        $path = tempnam(sys_get_temp_dir(), 'lazy_stream');
-        file_put_contents($path, 'lorem ipsum dolor');
+        $path = \tempnam(\sys_get_temp_dir(), 'lazy_stream');
+        \file_put_contents($path, 'lorem ipsum dolor');
         $stream = new Stream(\fopen($path, 'r'));
 
         $this->expectException(PositionNotSeekable::class);

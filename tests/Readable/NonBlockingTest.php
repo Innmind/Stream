@@ -19,7 +19,7 @@ class NonBlockingTest extends TestCase
 {
     public function testInterface()
     {
-        $stream = new NonBlocking(new Stream(tmpfile()));
+        $stream = new NonBlocking(new Stream(\tmpfile()));
 
         $this->assertInstanceOf(Readable::class, $stream);
         $this->assertInstanceOf(Selectable::class, $stream);
@@ -27,7 +27,7 @@ class NonBlockingTest extends TestCase
 
     public function testResource()
     {
-        $expected = tmpfile();
+        $expected = \tmpfile();
 
         $this->assertSame(
             $expected,
@@ -37,8 +37,8 @@ class NonBlockingTest extends TestCase
 
     public function testRead()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new NonBlocking(new Stream($resource));
         $text = $stream->read(3);
 
@@ -51,8 +51,8 @@ class NonBlockingTest extends TestCase
 
     public function testReadRemaining()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new NonBlocking(new Stream($resource));
         $stream->seek(new Position(3));
         $text = $stream->read();
@@ -63,8 +63,8 @@ class NonBlockingTest extends TestCase
 
     public function testReadLine()
     {
-        $resource = tmpfile();
-        fwrite($resource, "foo\nbar\nbaz");
+        $resource = \tmpfile();
+        \fwrite($resource, "foo\nbar\nbaz");
         $stream = new NonBlocking(new Stream($resource));
         $line = $stream->readLine();
 
@@ -77,10 +77,10 @@ class NonBlockingTest extends TestCase
 
     public function testPosition()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
 
-        $this->assertSame(9, ftell($resource));
+        $this->assertSame(9, \ftell($resource));
 
         $stream = new NonBlocking(new Stream($resource));
 
@@ -90,8 +90,8 @@ class NonBlockingTest extends TestCase
 
     public function testSeek()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new NonBlocking(new Stream($resource));
 
         $this->assertNull($stream->seek(new Position(3)));
@@ -104,8 +104,8 @@ class NonBlockingTest extends TestCase
 
     public function testRewind()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new NonBlocking(new Stream($resource));
         $stream->seek(new Position(3));
 
@@ -115,8 +115,8 @@ class NonBlockingTest extends TestCase
 
     public function testEnd()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new NonBlocking(new Stream($resource));
 
         $this->assertFalse($stream->end());
@@ -126,8 +126,8 @@ class NonBlockingTest extends TestCase
 
     public function testSize()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new NonBlocking(new Stream($resource));
 
         $this->assertTrue($stream->knowsSize());
@@ -137,8 +137,8 @@ class NonBlockingTest extends TestCase
 
     public function testClose()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new NonBlocking(new Stream($resource));
 
         $this->assertFalse($stream->closed());
@@ -148,8 +148,8 @@ class NonBlockingTest extends TestCase
 
     public function testStringCast()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new NonBlocking(new Stream($resource));
 
         $this->assertSame('foobarbaz', $stream->toString());

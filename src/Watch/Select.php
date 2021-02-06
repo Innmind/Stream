@@ -44,6 +44,95 @@ final class Select implements Watch
         $this->outOfBandResources = [];
     }
 
+    public function __invoke(): Ready
+    {
+        if (
+            $this->read->empty() &&
+            $this->write->empty() &&
+            $this->outOfBand->empty()
+        ) {
+            /** @var Set<Selectable> */
+            $nothingReady = Set::of(Selectable::class);
+
+            return new Ready($nothingReady, $nothingReady, $nothingReady);
+        }
+
+        $read = $this->readResources;
+        $write = $this->writeResources;
+        $outOfBand = $this->outOfBandResources;
+        $seconds = (int) ($this->timeout->milliseconds() / 1000);
+        $microseconds = ($this->timeout->milliseconds() - ($seconds * 1000)) * 1000;
+
+        $return = @\stream_select(
+            $read,
+            $write,
+            $outOfBand,
+            $seconds,
+            $microseconds,
+        );
+
+        if ($return === false) {
+            $error = \error_get_last();
+
+            /**
+             * @psalm-suppress PossiblyNullArrayAccess
+             * @psalm-suppress PossiblyNullArgument
+             */
+            throw new SelectFailed(
+                $error['message'],
+                $error['type'],
+            );
+        }
+
+        /**
+         * @var Set<Selectable>
+         * @psalm-suppress MissingClosureParamType
+         * @psalm-suppress PossiblyNullArgument
+         * @psalm-suppress MixedArgument because $resource can't be typed
+         */
+        $readable = \array_reduce(
+            $read,
+            function(Set $carry, $resource): Set {
+                return $carry->add(
+                    $this->read->get($resource),
+                );
+            },
+            Set::of(Selectable::class),
+        );
+        /**
+         * @var Set<Selectable>
+         * @psalm-suppress MissingClosureParamType
+         * @psalm-suppress PossiblyNullArgument
+         * @psalm-suppress MixedArgument because $resource can't be typed
+         */
+        $writable = \array_reduce(
+            $write,
+            function(Set $carry, $resource): Set {
+                return $carry->add(
+                    $this->write->get($resource),
+                );
+            },
+            Set::of(Selectable::class),
+        );
+        /**
+         * @var Set<Selectable>
+         * @psalm-suppress MissingClosureParamType
+         * @psalm-suppress PossiblyNullArgument
+         * @psalm-suppress MixedArgument because $resource can't be typed
+         */
+        $outOfBandReady = \array_reduce(
+            $outOfBand,
+            function(Set $carry, $resource): Set {
+                return $carry->add(
+                    $this->outOfBand->get($resource),
+                );
+            },
+            Set::of(Selectable::class),
+        );
+
+        return new Ready($readable, $writable, $outOfBandReady);
+    }
+
     public function forRead(Selectable $read, Selectable ...$reads): Watch
     {
         $self = clone $this;
@@ -136,93 +225,5 @@ final class Select implements Watch
         ));
 
         return $self;
-    }
-
-    public function __invoke(): Ready
-    {
-        if (
-            $this->read->empty() &&
-            $this->write->empty() &&
-            $this->outOfBand->empty()
-        ) {
-            /** @var Set<Selectable> */
-            $nothingReady = Set::of(Selectable::class);
-            return new Ready($nothingReady, $nothingReady, $nothingReady);
-        }
-
-        $read = $this->readResources;
-        $write = $this->writeResources;
-        $outOfBand = $this->outOfBandResources;
-        $seconds = (int) ($this->timeout->milliseconds() / 1000);
-        $microseconds = ($this->timeout->milliseconds() - ($seconds * 1000)) * 1000;
-
-        $return = @\stream_select(
-            $read,
-            $write,
-            $outOfBand,
-            $seconds,
-            $microseconds,
-        );
-
-        if ($return === false) {
-            $error = \error_get_last();
-
-            /**
-             * @psalm-suppress PossiblyNullArrayAccess
-             * @psalm-suppress PossiblyNullArgument
-             */
-            throw new SelectFailed(
-                $error['message'],
-                $error['type'],
-            );
-        }
-
-        /**
-         * @var Set<Selectable>
-         * @psalm-suppress MissingClosureParamType
-         * @psalm-suppress PossiblyNullArgument
-         * @psalm-suppress MixedArgument because $resource can't be typed
-         */
-        $readable = \array_reduce(
-            $read,
-            function(Set $carry, $resource): Set {
-                return $carry->add(
-                    $this->read->get($resource),
-                );
-            },
-            Set::of(Selectable::class),
-        );
-        /**
-         * @var Set<Selectable>
-         * @psalm-suppress MissingClosureParamType
-         * @psalm-suppress PossiblyNullArgument
-         * @psalm-suppress MixedArgument because $resource can't be typed
-         */
-        $writable = \array_reduce(
-            $write,
-            function(Set $carry, $resource): Set {
-                return $carry->add(
-                    $this->write->get($resource),
-                );
-            },
-            Set::of(Selectable::class),
-        );
-        /**
-         * @var Set<Selectable>
-         * @psalm-suppress MissingClosureParamType
-         * @psalm-suppress PossiblyNullArgument
-         * @psalm-suppress MixedArgument because $resource can't be typed
-         */
-        $outOfBandReady = \array_reduce(
-            $outOfBand,
-            function(Set $carry, $resource): Set {
-                return $carry->add(
-                    $this->outOfBand->get($resource),
-                );
-            },
-            Set::of(Selectable::class),
-        );
-
-        return new Ready($readable, $writable, $outOfBandReady);
     }
 }

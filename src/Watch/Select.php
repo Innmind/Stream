@@ -23,11 +23,11 @@ final class Select implements Watch
     private Map $write;
     /** @var Map<resource, Selectable> */
     private Map $outOfBand;
-    /** @var array<resource> */
+    /** @var list<resource> */
     private array $readResources;
-    /** @var array<resource> */
+    /** @var list<resource> */
     private array $writeResources;
-    /** @var array<resource> */
+    /** @var list<resource> */
     private array $outOfBandResources;
 
     public function __construct(ElapsedPeriod $timeout)
@@ -113,18 +113,21 @@ final class Select implements Watch
         $self->read = $self->read->remove($resource);
         $self->write = $self->write->remove($resource);
         $self->outOfBand = $self->outOfBand->remove($resource);
+        /** @var list<resource> */
         $self->readResources = \array_values(\array_filter(
             $self->readResources,
             static function($read) use ($resource): bool {
                 return $read !== $resource;
             },
         ));
+        /** @var list<resource> */
         $self->writeResources = \array_values(\array_filter(
             $self->writeResources,
             static function($write) use ($resource): bool {
                 return $write !== $resource;
             },
         ));
+        /** @var list<resource> */
         $self->outOfBandResources = \array_values(\array_filter(
             $self->outOfBandResources,
             static function($outOfBand) use ($resource): bool {

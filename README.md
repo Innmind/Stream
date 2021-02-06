@@ -1,6 +1,6 @@
 # Stream
 
-[![Build Status](https://github.com/Innmind/Stream/workflows/CI/badge.svg)](https://github.com/Innmind/Stream/actions?query=workflow%3ACI)
+[![Build Status](https://github.com/Innmind/Stream/workflows/CI/badge.svg?branch=master)](https://github.com/Innmind/Stream/actions?query=workflow%3ACI)
 [![codecov](https://codecov.io/gh/Innmind/Stream/branch/develop/graph/badge.svg)](https://codecov.io/gh/Innmind/Stream)
 [![Type Coverage](https://shepherd.dev/github/Innmind/Stream/coverage.svg)](https://shepherd.dev/github/Innmind/Stream)
 

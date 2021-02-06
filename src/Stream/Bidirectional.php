@@ -32,9 +32,6 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         $this->resource = $resource;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function resource()
     {
         return $this->resource;
@@ -80,9 +77,6 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->read->knowsSize();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function read(int $length = null): Str
     {
         return $this->read->read($length);

@@ -43,17 +43,11 @@ final class Stream implements Readable, Selectable
         return new self($resource);
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function resource()
     {
         return $this->resource;
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function read(int $length = null): Str
     {
         if ($this->closed()) {

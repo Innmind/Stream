@@ -3,7 +3,6 @@ declare(strict_types = 1);
 
 namespace Properties\Innmind\Stream\Readable;
 
-use Innmind\Immutable\Str;
 use Innmind\BlackBox\Property;
 use PHPUnit\Framework\Assert;
 

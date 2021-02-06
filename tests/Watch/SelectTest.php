@@ -28,15 +28,15 @@ class SelectTest extends TestCase
         $this->read = $this->read->start();
         $this->write = $this->write->start();
         $this->oob = $this->oob->start();
-        sleep(1);
+        \sleep(1);
     }
 
     public function tearDown(): void
     {
         try {
-            $this->read->stop(10, SIGKILL);
-            $this->write->stop(10, SIGKILL);
-            $this->oob->stop(10, SIGKILL);
+            $this->read->stop(10, \SIGKILL);
+            $this->write->stop(10, \SIGKILL);
+            $this->oob->stop(10, \SIGKILL);
         } catch (\Throwable $e) {
             //pass
         }
@@ -53,7 +53,7 @@ class SelectTest extends TestCase
     public function testForRead()
     {
         $select = new Select(new ElapsedPeriod(0));
-        $resource = fopen('php://temp', 'w');
+        $resource = \fopen('php://temp', 'w');
         $stream = $this->createMock(Selectable::class);
         $stream
             ->expects($this->exactly(2))
@@ -69,7 +69,7 @@ class SelectTest extends TestCase
     public function testForWrite()
     {
         $select = new Select(new ElapsedPeriod(0));
-        $resource = fopen('php://temp', 'w');
+        $resource = \fopen('php://temp', 'w');
         $stream = $this->createMock(Selectable::class);
         $stream
             ->expects($this->exactly(2))
@@ -85,7 +85,7 @@ class SelectTest extends TestCase
     public function testForOutOfBand()
     {
         $select = new Select(new ElapsedPeriod(0));
-        $resource = fopen('php://temp', 'w');
+        $resource = \fopen('php://temp', 'w');
         $stream = $this->createMock(Selectable::class);
         $stream
             ->expects($this->exactly(2))
@@ -114,24 +114,24 @@ class SelectTest extends TestCase
         $read
             ->expects($this->exactly(2))
             ->method('resource')
-            ->willReturn($readSocket = stream_socket_client('unix:///tmp/read.sock'));
+            ->willReturn($readSocket = \stream_socket_client('unix:///tmp/read.sock'));
         $write = $this->createMock(Selectable::class);
         $write
             ->expects($this->exactly(2))
             ->method('resource')
-            ->willReturn($writeSocket = stream_socket_client('unix:///tmp/write.sock'));
+            ->willReturn($writeSocket = \stream_socket_client('unix:///tmp/write.sock'));
         $outOfBand = $this->createMock(Selectable::class);
         $outOfBand
             ->expects($this->exactly(2))
             ->method('resource')
-            ->willReturn($oobSocket = stream_socket_client('tcp://127.0.0.1:1234'));
+            ->willReturn($oobSocket = \stream_socket_client('tcp://127.0.0.1:1234'));
         $select = (new Select(new ElapsedPeriod(0)))
             ->forRead($read)
             ->forWrite($write)
             ->forOutOfBand($outOfBand);
-        fwrite($readSocket, 'foo');
-        fwrite($writeSocket, 'foo');
-        stream_socket_sendto($oobSocket, 'foo', STREAM_OOB);
+        \fwrite($readSocket, 'foo');
+        \fwrite($writeSocket, 'foo');
+        \stream_socket_sendto($oobSocket, 'foo', \STREAM_OOB);
 
         $ready = $select();
 
@@ -156,24 +156,24 @@ class SelectTest extends TestCase
         $read
             ->expects($this->exactly(3))
             ->method('resource')
-            ->willReturn($readSocket = stream_socket_client('unix:///tmp/read.sock'));
+            ->willReturn($readSocket = \stream_socket_client('unix:///tmp/read.sock'));
         $write = $this->createMock(Selectable::class);
         $write
             ->expects($this->exactly(3))
             ->method('resource')
-            ->willReturn($writeSocket = stream_socket_client('unix:///tmp/write.sock'));
+            ->willReturn($writeSocket = \stream_socket_client('unix:///tmp/write.sock'));
         $outOfBand = $this->createMock(Selectable::class);
         $outOfBand
             ->expects($this->exactly(3))
             ->method('resource')
-            ->willReturn($oobSocket = stream_socket_client('tcp://127.0.0.1:1234'));
+            ->willReturn($oobSocket = \stream_socket_client('tcp://127.0.0.1:1234'));
         $select = (new Select(new ElapsedPeriod(0)))
             ->forRead($read)
             ->forWrite($write)
             ->forOutOfBand($outOfBand);
-        fwrite($readSocket, 'foo');
-        fwrite($writeSocket, 'foo');
-        stream_socket_sendto($oobSocket, 'foo', STREAM_OOB);
+        \fwrite($readSocket, 'foo');
+        \fwrite($writeSocket, 'foo');
+        \stream_socket_sendto($oobSocket, 'foo', \STREAM_OOB);
 
         $select();
         $select2 = $select

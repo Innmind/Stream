@@ -23,11 +23,11 @@ final class Select implements Watch
     private Map $write;
     /** @var Map<resource, Selectable> */
     private Map $outOfBand;
-    /** @var array<resource> */
+    /** @var list<resource> */
     private array $readResources;
-    /** @var array<resource> */
+    /** @var list<resource> */
     private array $writeResources;
-    /** @var array<resource> */
+    /** @var list<resource> */
     private array $outOfBandResources;
 
     public function __construct(ElapsedPeriod $timeout)
@@ -44,97 +44,6 @@ final class Select implements Watch
         $this->outOfBandResources = [];
     }
 
-    public function forRead(Selectable $read, Selectable ...$reads): Watch
-    {
-        $self = clone $this;
-        $self->read = ($self->read)(
-            $read->resource(),
-            $read,
-        );
-        $self->readResources[] = $read->resource();
-
-        foreach ($reads as $read) {
-            $self->read = ($self->read)(
-                $read->resource(),
-                $read,
-            );
-            $self->readResources[] = $read->resource();
-        }
-
-        return $self;
-    }
-
-    public function forWrite(Selectable $write, Selectable ...$writes): Watch
-    {
-        $self = clone $this;
-        $self->write = ($self->write)(
-            $write->resource(),
-            $write,
-        );
-        $self->writeResources[] = $write->resource();
-
-        foreach ($writes as $write) {
-            $self->write = ($self->write)(
-                $write->resource(),
-                $write,
-            );
-            $self->writeResources[] = $write->resource();
-        }
-
-        return $self;
-    }
-
-    public function forOutOfBand(
-        Selectable $outOfBand,
-        Selectable ...$outOfBands
-    ): Watch {
-        $self = clone $this;
-        $self->outOfBand = ($self->outOfBand)(
-            $outOfBand->resource(),
-            $outOfBand,
-        );
-        $self->outOfBandResources[] = $outOfBand->resource();
-
-        foreach ($outOfBands as $outOfBand) {
-            $self->outOfBand = ($self->outOfBand)(
-                $outOfBand->resource(),
-                $outOfBand,
-            );
-            $self->outOfBandResources[] = $outOfBand->resource();
-        }
-
-        return $self;
-    }
-
-    public function unwatch(Selectable $stream): Watch
-    {
-        $resource = $stream->resource();
-        $self = clone $this;
-        $self->read = $self->read->remove($resource);
-        $self->write = $self->write->remove($resource);
-        $self->outOfBand = $self->outOfBand->remove($resource);
-        $self->readResources = \array_values(\array_filter(
-            $self->readResources,
-            static function($read) use ($resource): bool {
-                return $read !== $resource;
-            },
-        ));
-        $self->writeResources = \array_values(\array_filter(
-            $self->writeResources,
-            static function($write) use ($resource): bool {
-                return $write !== $resource;
-            },
-        ));
-        $self->outOfBandResources = \array_values(\array_filter(
-            $self->outOfBandResources,
-            static function($outOfBand) use ($resource): bool {
-                return $outOfBand !== $resource;
-            },
-        ));
-
-        return $self;
-    }
-
     public function __invoke(): Ready
     {
         if (
@@ -144,6 +53,7 @@ final class Select implements Watch
         ) {
             /** @var Set<Selectable> */
             $nothingReady = Set::of(Selectable::class);
+
             return new Ready($nothingReady, $nothingReady, $nothingReady);
         }
 
@@ -221,5 +131,99 @@ final class Select implements Watch
         );
 
         return new Ready($readable, $writable, $outOfBandReady);
+    }
+
+    public function forRead(Selectable $read, Selectable ...$reads): Watch
+    {
+        $self = clone $this;
+        $self->read = ($self->read)(
+            $read->resource(),
+            $read,
+        );
+        $self->readResources[] = $read->resource();
+
+        foreach ($reads as $read) {
+            $self->read = ($self->read)(
+                $read->resource(),
+                $read,
+            );
+            $self->readResources[] = $read->resource();
+        }
+
+        return $self;
+    }
+
+    public function forWrite(Selectable $write, Selectable ...$writes): Watch
+    {
+        $self = clone $this;
+        $self->write = ($self->write)(
+            $write->resource(),
+            $write,
+        );
+        $self->writeResources[] = $write->resource();
+
+        foreach ($writes as $write) {
+            $self->write = ($self->write)(
+                $write->resource(),
+                $write,
+            );
+            $self->writeResources[] = $write->resource();
+        }
+
+        return $self;
+    }
+
+    public function forOutOfBand(
+        Selectable $outOfBand,
+        Selectable ...$outOfBands
+    ): Watch {
+        $self = clone $this;
+        $self->outOfBand = ($self->outOfBand)(
+            $outOfBand->resource(),
+            $outOfBand,
+        );
+        $self->outOfBandResources[] = $outOfBand->resource();
+
+        foreach ($outOfBands as $outOfBand) {
+            $self->outOfBand = ($self->outOfBand)(
+                $outOfBand->resource(),
+                $outOfBand,
+            );
+            $self->outOfBandResources[] = $outOfBand->resource();
+        }
+
+        return $self;
+    }
+
+    public function unwatch(Selectable $stream): Watch
+    {
+        $resource = $stream->resource();
+        $self = clone $this;
+        $self->read = $self->read->remove($resource);
+        $self->write = $self->write->remove($resource);
+        $self->outOfBand = $self->outOfBand->remove($resource);
+        /** @var list<resource> */
+        $self->readResources = \array_values(\array_filter(
+            $self->readResources,
+            static function($read) use ($resource): bool {
+                return $read !== $resource;
+            },
+        ));
+        /** @var list<resource> */
+        $self->writeResources = \array_values(\array_filter(
+            $self->writeResources,
+            static function($write) use ($resource): bool {
+                return $write !== $resource;
+            },
+        ));
+        /** @var list<resource> */
+        $self->outOfBandResources = \array_values(\array_filter(
+            $self->outOfBandResources,
+            static function($outOfBand) use ($resource): bool {
+                return $outOfBand !== $resource;
+            },
+        ));
+
+        return $self;
     }
 }

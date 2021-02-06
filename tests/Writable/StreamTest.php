@@ -21,7 +21,7 @@ class StreamTest extends TestCase
 {
     public function testInterface()
     {
-        $stream = new Stream(tmpfile());
+        $stream = new Stream(\tmpfile());
 
         $this->assertInstanceOf(Writable::class, $stream);
         $this->assertInstanceOf(Selectable::class, $stream);
@@ -38,15 +38,15 @@ class StreamTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new Stream(imagecreatetruecolor(42, 42));
+        new Stream(\imagecreatetruecolor(42, 42));
     }
 
     public function testPosition()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
 
-        $this->assertSame(9, ftell($resource));
+        $this->assertSame(9, \ftell($resource));
 
         $stream = new Stream($resource);
 
@@ -56,8 +56,8 @@ class StreamTest extends TestCase
 
     public function testSeek()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
         $this->assertNull($stream->seek(new Position(3)));
@@ -70,8 +70,8 @@ class StreamTest extends TestCase
 
     public function testRewind()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
         $stream->seek(new Position(3));
 
@@ -81,19 +81,19 @@ class StreamTest extends TestCase
 
     public function testEnd()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
         $this->assertFalse($stream->end());
-        fread($resource, 10);
+        \fread($resource, 10);
         $this->assertTrue($stream->end());
     }
 
     public function testSize()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
         $this->assertTrue($stream->knowsSize());
@@ -103,8 +103,8 @@ class StreamTest extends TestCase
 
     public function testClose()
     {
-        $resource = tmpfile();
-        fwrite($resource, 'foobarbaz');
+        $resource = \tmpfile();
+        \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
         $this->assertFalse($stream->closed());
@@ -114,17 +114,17 @@ class StreamTest extends TestCase
 
     public function testWrite()
     {
-        $resource = tmpfile();
+        $resource = \tmpfile();
         $stream = new Stream($resource);
 
         $this->assertNull($stream->write(Str::of('foobarbaz')));
-        fseek($resource, 0);
-        $this->assertSame('foobarbaz', stream_get_contents($resource));
+        \fseek($resource, 0);
+        $this->assertSame('foobarbaz', \stream_get_contents($resource));
     }
 
     public function testThrowWhenWritingToClosedStream()
     {
-        $resource = tmpfile();
+        $resource = \tmpfile();
         $stream = new Stream($resource);
 
         $this->expectException(FailedToWriteToStream::class);
@@ -135,7 +135,7 @@ class StreamTest extends TestCase
 
     public function testThrowWhenWriteFailed()
     {
-        $resource = fopen('php://temp', 'r');
+        $resource = \fopen('php://temp', 'r');
         $stream = new Stream($resource);
 
         $this->expectException(FailedToWriteToStream::class);
@@ -145,7 +145,7 @@ class StreamTest extends TestCase
 
     public function testThrowWhenDataPartiallyWritten()
     {
-        $resource = fopen('php://temp', 'w');
+        $resource = \fopen('php://temp', 'w');
         $stream = new Stream($resource);
 
         try {

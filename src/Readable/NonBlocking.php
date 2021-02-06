@@ -38,17 +38,11 @@ final class NonBlocking implements Readable, Selectable
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function resource()
     {
         return $this->stream->resource();
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function read(int $length = null): Str
     {
         return $this->stream->read($length);

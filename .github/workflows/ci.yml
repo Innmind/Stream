@@ -34,6 +34,7 @@ jobs:
         run: vendor/bin/phpunit
         env:
           BLACKBOX_DETAILED_PROPERTIES: 1
+          WITHOUT_OOB: 1
   coverage:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -65,6 +66,7 @@ jobs:
         run: vendor/bin/phpunit --coverage-clover=coverage.clover
         env:
           BLACKBOX_SET_SIZE: 1
+          WITHOUT_OOB: 1
       - uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

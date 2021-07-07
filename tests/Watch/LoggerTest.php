@@ -9,7 +9,10 @@ use Innmind\Stream\{
     Watch,
     Selectable,
 };
-use Innmind\Immutable\Set as ISet;
+use Innmind\Immutable\{
+    Set as ISet,
+    Either,
+};
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
 use Innmind\BlackBox\{
@@ -51,11 +54,11 @@ class LoggerTest extends TestCase
                 $inner
                     ->expects($this->once())
                     ->method('__invoke')
-                    ->willReturn($expected = new Ready(
+                    ->willReturn(Either::right($expected = new Ready(
                         ISet::of(...$read),
                         ISet::of(...$write),
                         ISet::of(...$outOfBand),
-                    ));
+                    )));
                 $logger = $this->createMock(LoggerInterface::class);
                 $logger
                     ->expects($this->once())
@@ -70,7 +73,10 @@ class LoggerTest extends TestCase
                     );
                 $watch = new Logger($inner, $logger);
 
-                $this->assertSame($expected, $watch());
+                $this->assertSame($expected, $watch()->match(
+                    static fn() => null,
+                    static fn($ready) => $ready,
+                ));
             });
     }
 
@@ -91,11 +97,11 @@ class LoggerTest extends TestCase
                 $inner2
                     ->expects($this->once())
                     ->method('__invoke')
-                    ->willReturn($expected = new Ready(
-                        ISet::of(Selectable::class),
-                        ISet::of(Selectable::class),
-                        ISet::of(Selectable::class),
-                    ));
+                    ->willReturn(Either::right($expected = new Ready(
+                        ISet::of(),
+                        ISet::of(),
+                        ISet::of(),
+                    )));
                 $logger = $this->createMock(LoggerInterface::class);
                 $logger
                     ->expects($this->exactly(2))
@@ -112,7 +118,10 @@ class LoggerTest extends TestCase
 
                 $this->assertInstanceOf(Logger::class, $watch2);
                 $this->assertNotSame($watch, $watch2);
-                $this->assertSame($expected, $watch2());
+                $this->assertSame($expected, $watch2()->match(
+                    static fn() => null,
+                    static fn($ready) => $ready,
+                ));
             });
     }
 
@@ -133,11 +142,11 @@ class LoggerTest extends TestCase
                 $inner2
                     ->expects($this->once())
                     ->method('__invoke')
-                    ->willReturn($expected = new Ready(
-                        ISet::of(Selectable::class),
-                        ISet::of(Selectable::class),
-                        ISet::of(Selectable::class),
-                    ));
+                    ->willReturn(Either::right($expected = new Ready(
+                        ISet::of(),
+                        ISet::of(),
+                        ISet::of(),
+                    )));
                 $logger = $this->createMock(LoggerInterface::class);
                 $logger
                     ->expects($this->exactly(2))
@@ -154,7 +163,10 @@ class LoggerTest extends TestCase
 
                 $this->assertInstanceOf(Logger::class, $watch2);
                 $this->assertNotSame($watch, $watch2);
-                $this->assertSame($expected, $watch2());
+                $this->assertSame($expected, $watch2()->match(
+                    static fn() => null,
+                    static fn($ready) => $ready,
+                ));
             });
     }
 
@@ -175,11 +187,11 @@ class LoggerTest extends TestCase
                 $inner2
                     ->expects($this->once())
                     ->method('__invoke')
-                    ->willReturn($expected = new Ready(
-                        ISet::of(Selectable::class),
-                        ISet::of(Selectable::class),
-                        ISet::of(Selectable::class),
-                    ));
+                    ->willReturn(Either::right($expected = new Ready(
+                        ISet::of(),
+                        ISet::of(),
+                        ISet::of(),
+                    )));
                 $logger = $this->createMock(LoggerInterface::class);
                 $logger
                     ->expects($this->exactly(2))
@@ -196,7 +208,10 @@ class LoggerTest extends TestCase
 
                 $this->assertInstanceOf(Logger::class, $watch2);
                 $this->assertNotSame($watch, $watch2);
-                $this->assertSame($expected, $watch2());
+                $this->assertSame($expected, $watch2()->match(
+                    static fn() => null,
+                    static fn($ready) => $ready,
+                ));
             });
     }
 
@@ -212,11 +227,11 @@ class LoggerTest extends TestCase
         $inner2
             ->expects($this->once())
             ->method('__invoke')
-            ->willReturn($expected = new Ready(
-                ISet::of(Selectable::class),
-                ISet::of(Selectable::class),
-                ISet::of(Selectable::class),
-            ));
+            ->willReturn(Either::right($expected = new Ready(
+                ISet::of(),
+                ISet::of(),
+                ISet::of(),
+            )));
         $logger = $this->createMock(LoggerInterface::class);
         $logger
             ->expects($this->exactly(2))
@@ -230,6 +245,9 @@ class LoggerTest extends TestCase
 
         $this->assertInstanceOf(Logger::class, $watch2);
         $this->assertNotSame($watch, $watch2);
-        $this->assertSame($expected, $watch2());
+        $this->assertSame($expected, $watch2()->match(
+            static fn() => null,
+            static fn($ready) => $ready,
+        ));
     }
 }

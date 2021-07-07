@@ -4,10 +4,14 @@ declare(strict_types = 1);
 namespace Innmind\Stream;
 
 use Innmind\Stream\Watch\Ready;
+use Innmind\Immutable\Either;
 
 interface Watch
 {
-    public function __invoke(): Ready;
+    /**
+     * @return Either<WatchFailed, Ready>
+     */
+    public function __invoke(): Either;
 
     /**
      * @param Selectable&Readable $read

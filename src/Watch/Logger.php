@@ -6,7 +6,9 @@ namespace Innmind\Stream\Watch;
 use Innmind\Stream\{
     Watch,
     Selectable,
+    WatchFailed,
 };
+use Innmind\Immutable\Either;
 use Psr\Log\LoggerInterface;
 
 final class Logger implements Watch
@@ -20,20 +22,9 @@ final class Logger implements Watch
         $this->logger = $logger;
     }
 
-    public function __invoke(): Ready
+    public function __invoke(): Either
     {
-        $ready = ($this->watch)();
-
-        $this->logger->info(
-            'Streams ready: {read} for read, {write} for write, {oob} for out of band',
-            [
-                'read' => $ready->toRead()->size(),
-                'write' => $ready->toWrite()->size(),
-                'oob' => $ready->toOutOfBand()->size(),
-            ],
-        );
-
-        return $ready;
+        return ($this->watch)()->map(fn($ready) => $this->log($ready));
     }
 
     public function forRead(Selectable $read, Selectable ...$reads): Watch
@@ -83,5 +74,19 @@ final class Logger implements Watch
             $this->watch->unwatch($stream),
             $this->logger,
         );
+    }
+
+    private function log(Ready $ready): Ready
+    {
+        $this->logger->info(
+            'Streams ready: {read} for read, {write} for write, {oob} for out of band',
+            [
+                'read' => $ready->toRead()->size(),
+                'write' => $ready->toWrite()->size(),
+                'oob' => $ready->toOutOfBand()->size(),
+            ],
+        );
+
+        return $ready;
     }
 }

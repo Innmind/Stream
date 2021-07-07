@@ -8,12 +8,14 @@ use Innmind\Stream\{
     Selectable,
     Readable,
     Writable,
-    Exception\SelectFailed
+    WatchFailed,
+    Exception\SelectFailed,
 };
 use Innmind\TimeContinuum\ElapsedPeriod;
 use Innmind\Immutable\{
     Map,
     Set,
+    Either,
 };
 
 final class Select implements Watch
@@ -46,7 +48,7 @@ final class Select implements Watch
         $this->outOfBandResources = [];
     }
 
-    public function __invoke(): Ready
+    public function __invoke(): Either
     {
         if (
             $this->read->empty() &&
@@ -60,7 +62,7 @@ final class Select implements Watch
             /** @var Set<Selectable> */
             $outOfBand = Set::of();
 
-            return new Ready($read, $write, $outOfBand);
+            return Either::right(new Ready($read, $write, $outOfBand));
         }
 
         $read = $this->readResources;
@@ -78,16 +80,7 @@ final class Select implements Watch
         );
 
         if ($return === false) {
-            $error = \error_get_last();
-
-            /**
-             * @psalm-suppress PossiblyNullArrayAccess
-             * @psalm-suppress PossiblyNullArgument
-             */
-            throw new SelectFailed(
-                $error['message'],
-                $error['type'],
-            );
+            return Either::left(new WatchFailed);
         }
 
         /**
@@ -124,7 +117,7 @@ final class Select implements Watch
                 static fn(Set $set, $stream): Set => ($set)($stream),
             );
 
-        return new Ready($readable, $writable, $outOfBandReady);
+        return Either::right(new Ready($readable, $writable, $outOfBandReady));
     }
 
     public function forRead(Selectable $read, Selectable ...$reads): Watch

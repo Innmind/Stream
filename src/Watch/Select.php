@@ -6,6 +6,8 @@ namespace Innmind\Stream\Watch;
 use Innmind\Stream\{
     Watch,
     Selectable,
+    Readable,
+    Writable,
     Exception\SelectFailed
 };
 use Innmind\TimeContinuum\ElapsedPeriod;
@@ -17,9 +19,9 @@ use Innmind\Immutable\{
 final class Select implements Watch
 {
     private ElapsedPeriod $timeout;
-    /** @var Map<resource, Selectable> */
+    /** @var Map<resource, Selectable&Readable> */
     private Map $read;
-    /** @var Map<resource, Selectable> */
+    /** @var Map<resource, Selectable&Writable> */
     private Map $write;
     /** @var Map<resource, Selectable> */
     private Map $outOfBand;
@@ -33,9 +35,9 @@ final class Select implements Watch
     public function __construct(ElapsedPeriod $timeout)
     {
         $this->timeout = $timeout;
-        /** @var Map<resource, Selectable> */
+        /** @var Map<resource, Selectable&Readable> */
         $this->read = Map::of();
-        /** @var Map<resource, Selectable> */
+        /** @var Map<resource, Selectable&Writable> */
         $this->write = Map::of();
         /** @var Map<resource, Selectable> */
         $this->outOfBand = Map::of();
@@ -51,10 +53,14 @@ final class Select implements Watch
             $this->write->empty() &&
             $this->outOfBand->empty()
         ) {
+            /** @var Set<Selectable&Readable> */
+            $read = Set::of();
+            /** @var Set<Selectable&Writable> */
+            $write = Set::of();
             /** @var Set<Selectable> */
-            $nothingReady = Set::of();
+            $outOfBand = Set::of();
 
-            return new Ready($nothingReady, $nothingReady, $nothingReady);
+            return new Ready($read, $write, $outOfBand);
         }
 
         $read = $this->readResources;
@@ -85,7 +91,7 @@ final class Select implements Watch
         }
 
         /**
-         * @var Set<Selectable>
+         * @var Set<Selectable&Readable>
          */
         $readable = $this
             ->read
@@ -96,7 +102,7 @@ final class Select implements Watch
                 static fn(Set $set, $stream): Set => ($set)($stream),
             );
         /**
-         * @var Set<Selectable>
+         * @var Set<Selectable&Writable>
          */
         $writable = $this
             ->write

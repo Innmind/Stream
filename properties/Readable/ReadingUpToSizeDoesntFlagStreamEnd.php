@@ -15,13 +15,23 @@ final class ReadingUpToSizeDoesntFlagStreamEnd implements Property
 
     public function applicableTo(object $stream): bool
     {
-        return $stream->knowsSize() && !$stream->end();
+        return !$stream->end() && $stream->size()->match(
+            static fn() => true,
+            static fn() => false,
+        );
     }
 
     public function ensureHeldBy(object $stream): object
     {
         $stream->read(
-            $stream->size()->toInt() - $stream->position()->toInt(),
+            $stream
+                ->size()
+                ->map(static fn($size) => $size->toInt())
+                ->map(static fn($size) => $size - $stream->position()->toInt())
+                ->match(
+                    static fn($size) => $size,
+                    static fn() => 0,
+                ),
         );
         Assert::assertFalse($stream->end());
 

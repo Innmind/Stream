@@ -8,6 +8,7 @@ use Innmind\Stream\Stream\{
     Size,
     Position\Mode
 };
+use Innmind\Immutable\Maybe;
 
 interface Stream
 {
@@ -17,6 +18,9 @@ interface Stream
     public function seek(Position $position, Mode $mode = null): void;
     public function rewind(): void;
     public function end(): bool;
-    public function size(): Size;
-    public function knowsSize(): bool;
+
+    /**
+     * @return Maybe<Size>
+     */
+    public function size(): Maybe;
 }

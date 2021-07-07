@@ -14,7 +14,10 @@ use Innmind\Stream\{
     Exception\FailedToWriteToStream,
     Exception\DataPartiallyWritten
 };
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 final class Stream implements Writable, Selectable
 {
@@ -74,14 +77,9 @@ final class Stream implements Writable, Selectable
         return $this->stream->end();
     }
 
-    public function size(): Size
+    public function size(): Maybe
     {
         return $this->stream->size();
-    }
-
-    public function knowsSize(): bool
-    {
-        return $this->stream->knowsSize();
     }
 
     public function close(): void

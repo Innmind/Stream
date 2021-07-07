@@ -13,7 +13,10 @@ use Innmind\Stream\{
     Stream\Position\Mode
 };
 use Innmind\Url\Path;
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 final class Stream implements Readable, Selectable
 {
@@ -89,14 +92,9 @@ final class Stream implements Readable, Selectable
         return $this->stream->end();
     }
 
-    public function size(): Size
+    public function size(): Maybe
     {
         return $this->stream->size();
-    }
-
-    public function knowsSize(): bool
-    {
-        return $this->stream->knowsSize();
     }
 
     public function close(): void

@@ -9,16 +9,18 @@ use Innmind\Stream\{
     Stream\Position,
     Stream\Position\Mode,
     Exception\InvalidArgumentException,
-    Exception\UnknownSize,
     Exception\FailedToCloseStream,
     Exception\PositionNotSeekable,
 };
+use Innmind\Immutable\Maybe;
 
 final class Stream implements StreamInterface
 {
     /** @var resource */
     private $resource;
-    private ?Size $size = null;
+
+    /** @var Maybe<Size> */
+    private Maybe $size;
     private bool $closed = false;
     private bool $seekable = false;
 
@@ -36,18 +38,21 @@ final class Stream implements StreamInterface
         }
 
         $this->resource = $resource;
+        /** @var Maybe<Size> */
+        $this->size = Maybe::nothing();
+
+        $stats = \fstat($resource);
+
+        if (isset($stats['size'])) {
+            $this->size = Maybe::just(new Size((int) $stats['size']));
+        }
+
         $meta = \stream_get_meta_data($resource);
 
         if ($meta['seekable'] && \substr($meta['uri'], 0, 9) !== 'php://std') {
             //stdin, stdout and stderr are not seekable
             $this->seekable = true;
             $this->rewind();
-        }
-
-        $stats = \fstat($resource);
-
-        if (isset($stats['size'])) {
-            $this->size = new Size((int) $stats['size']);
         }
     }
 
@@ -82,6 +87,7 @@ final class Stream implements StreamInterface
         );
 
         if ($status === -1) {
+            /** @psalm-suppress ImpureMethodCall */
             \fseek(
                 $this->resource,
                 $previous->toInt(),
@@ -106,18 +112,9 @@ final class Stream implements StreamInterface
         return \feof($this->resource);
     }
 
-    public function size(): Size
+    public function size(): Maybe
     {
-        if (!$this->size instanceof Size) {
-            throw new UnknownSize;
-        }
-
         return $this->size;
-    }
-
-    public function knowsSize(): bool
-    {
-        return $this->size instanceof Size;
     }
 
     public function close(): void
@@ -147,10 +144,6 @@ final class Stream implements StreamInterface
      */
     private function assertSeekable(Position $position, Mode $mode): void
     {
-        if (!$this->knowsSize()) {
-            return;
-        }
-
         switch ($mode) {
             case Mode::fromCurrentPosition():
                 $targetPosition = $this->position()->toInt() + $position->toInt();
@@ -161,8 +154,13 @@ final class Stream implements StreamInterface
                 break;
         }
 
-        if ($targetPosition > $this->size()->toInt()) {
-            throw new PositionNotSeekable;
-        }
+        $assert = $this
+            ->size()
+            ->filter(static fn($size) => $targetPosition > $size->toInt())
+            ->match(
+                static fn() => static fn() => throw new PositionNotSeekable,
+                static fn() => static fn() => null,
+            );
+        $assert();
     }
 }

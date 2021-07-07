@@ -130,9 +130,12 @@ class NonBlockingTest extends TestCase
         \fwrite($resource, 'foobarbaz');
         $stream = new NonBlocking(new Stream($resource));
 
-        $this->assertTrue($stream->knowsSize());
-        $this->assertInstanceOf(Size::class, $stream->size());
-        $this->assertSame(9, $stream->size()->toInt());
+        $size = $stream->size()->match(
+            static fn($size) => $size,
+            static fn() => null,
+        );
+        $this->assertInstanceOf(Size::class, $size);
+        $this->assertSame(9, $size->toInt());
     }
 
     public function testClose()

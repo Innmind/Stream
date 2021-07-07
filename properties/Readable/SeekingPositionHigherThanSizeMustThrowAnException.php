@@ -26,7 +26,10 @@ final class SeekingPositionHigherThanSizeMustThrowAnException implements Propert
 
     public function applicableTo(object $stream): bool
     {
-        return !$stream->closed() && $stream->knowsSize();
+        return !$stream->closed() && $stream->size()->match(
+            static fn() => true,
+            static fn() => false,
+        );
     }
 
     public function ensureHeldBy(object $stream): object
@@ -34,7 +37,16 @@ final class SeekingPositionHigherThanSizeMustThrowAnException implements Propert
         try {
             $current = $stream->position()->toInt();
             $stream->seek(
-                new Position($this->position + $stream->size()->toInt()),
+                new Position(
+                    $stream
+                        ->size()
+                        ->map(static fn($size) => $size->toInt())
+                        ->map(fn($size) => $this->position + $size)
+                        ->match(
+                            static fn($size) => $size,
+                            static fn() => 0,
+                        ),
+                ),
                 Position\Mode::fromStart(),
             );
 

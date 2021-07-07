@@ -57,7 +57,13 @@ final class Readable
             Set\Composite::mutable(
                 static function(Stream $stream, int $position): Stream {
                     $stream->seek(
-                        new Position(\min($position, $stream->size()->toInt())),
+                        new Position(\min(
+                            $position,
+                            $stream->size()->match(
+                                static fn($size) => $size->toInt(),
+                                static fn() => 0,
+                            ),
+                        )),
                     );
 
                     return $stream;

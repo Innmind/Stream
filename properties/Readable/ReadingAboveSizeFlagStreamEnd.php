@@ -15,12 +15,23 @@ final class ReadingAboveSizeFlagStreamEnd implements Property
 
     public function applicableTo(object $stream): bool
     {
-        return $stream->knowsSize();
+        return $stream->size()->match(
+            static fn() => true,
+            static fn() => false,
+        );
     }
 
     public function ensureHeldBy(object $stream): object
     {
-        $stream->read($stream->size()->toInt() + 1);
+        $stream->read(
+            $stream
+                ->size()
+                ->map(static fn($size) => $size->toInt() + 1)
+                ->match(
+                    static fn($size) => $size,
+                    static fn() => 0,
+                ),
+        );
         Assert::assertTrue($stream->end());
 
         return $stream;

@@ -24,8 +24,13 @@ final class SeekingFromCurrentPosition implements Property
     public function applicableTo(object $stream): bool
     {
         return !$stream->closed() &&
-            $stream->knowsSize() &&
-            ($stream->position()->toInt() + $this->position) <= $stream->size()->toInt(); // otherwise it will throw
+            $stream
+                ->size()
+                ->filter(fn($size) => ($stream->position()->toInt() + $this->position) <= $size->toInt()) // otherwise it will throw
+                ->match(
+                    static fn() => true,
+                    static fn() => false,
+                );
     }
 
     public function ensureHeldBy(object $stream): object

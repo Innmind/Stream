@@ -24,8 +24,13 @@ final class ReadingChunkAlwaysReturnSameValue implements Property
     public function applicableTo(object $stream): bool
     {
         return !$stream->closed() && // otherwise it will return an empty string
-            $stream->knowsSize() &&
-            $stream->size()->toInt() !== $stream->position()->toInt(); // nothing more to read
+            $stream
+                ->size()
+                ->filter(static fn($size) => $size->toInt() !== $stream->position()->toInt()) // nothing more to read
+                ->match(
+                    static fn() => true,
+                    static fn() => false,
+                );
     }
 
     public function ensureHeldBy(object $stream): object

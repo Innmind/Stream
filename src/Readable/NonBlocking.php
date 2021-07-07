@@ -12,7 +12,10 @@ use Innmind\Stream\{
     Stream\Position\Mode,
     Exception\NonBlockingModeNotSupported,
 };
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 final class NonBlocking implements Readable, Selectable
 {
@@ -28,8 +31,8 @@ final class NonBlocking implements Readable, Selectable
             throw new NonBlockingModeNotSupported;
         }
 
-        \stream_set_write_buffer($resource, 0);
-        \stream_set_read_buffer($resource, 0);
+        $_ = \stream_set_write_buffer($resource, 0);
+        $_ = \stream_set_read_buffer($resource, 0);
 
         if ($selectable instanceof Readable) {
             $this->stream = $selectable;
@@ -73,14 +76,9 @@ final class NonBlocking implements Readable, Selectable
         return $this->stream->end();
     }
 
-    public function size(): Size
+    public function size(): Maybe
     {
         return $this->stream->size();
-    }
-
-    public function knowsSize(): bool
-    {
-        return $this->stream->knowsSize();
     }
 
     public function close(): void

@@ -21,7 +21,10 @@ final class PositionCanNeverBeHigherThanSize implements Property
     public function ensureHeldBy(object $stream): object
     {
         Assert::assertLessThanOrEqual(
-            $stream->size()->toInt(),
+            $stream->size()->match(
+                static fn($size) => $size->toInt(),
+                static fn() => 0,
+            ),
             $stream->position()->toInt(),
         );
 

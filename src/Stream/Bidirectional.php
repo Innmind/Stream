@@ -11,7 +11,10 @@ use Innmind\Stream\{
     Stream as StreamInterface,
     Stream\Position\Mode,
 };
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+};
 
 final class Bidirectional implements BidirectionalInterface, Selectable
 {
@@ -67,14 +70,9 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->read->end();
     }
 
-    public function size(): Size
+    public function size(): Maybe
     {
         return $this->read->size();
-    }
-
-    public function knowsSize(): bool
-    {
-        return $this->read->knowsSize();
     }
 
     public function read(int $length = null): Str

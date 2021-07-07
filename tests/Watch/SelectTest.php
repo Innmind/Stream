@@ -10,7 +10,6 @@ use Innmind\Stream\{
     Selectable
 };
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
-use function Innmind\Immutable\first;
 use Symfony\Component\Process\Process;
 use PHPUnit\Framework\TestCase;
 
@@ -138,14 +137,23 @@ class SelectTest extends TestCase
         $this->assertInstanceOf(Ready::class, $ready);
         $this->assertCount(1, $ready->toRead());
         $this->assertCount(1, $ready->toWrite());
-        $this->assertSame($read, first($ready->toRead()));
-        $this->assertSame($write, first($ready->toWrite()));
+        $this->assertSame($read, $ready->toRead()->find(static fn() => true)->match(
+            static fn($stream) => $stream,
+            static fn() => null,
+        ));
+        $this->assertSame($write, $ready->toWrite()->find(static fn() => true)->match(
+            static fn($stream) => $stream,
+            static fn() => null,
+        ));
 
         // for unknown reasons the out of band streams often fail in the CI
         // so until someone find out why it fails the assertions are disabled
         if (\getenv('WITHOUT_OOB') === false) {
             $this->assertCount(1, $ready->toOutOfBand());
-            $this->assertSame($outOfBand, first($ready->toOutOfBand()));
+            $this->assertSame($outOfBand, $ready->toOutOfBand()->find(static fn() => true)->match(
+                static fn($stream) => $stream,
+                static fn() => null,
+            ));
         }
 
         $ready = $select();

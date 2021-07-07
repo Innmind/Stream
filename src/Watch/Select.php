@@ -34,11 +34,11 @@ final class Select implements Watch
     {
         $this->timeout = $timeout;
         /** @var Map<resource, Selectable> */
-        $this->read = Map::of('resource', Selectable::class);
+        $this->read = Map::of();
         /** @var Map<resource, Selectable> */
-        $this->write = Map::of('resource', Selectable::class);
+        $this->write = Map::of();
         /** @var Map<resource, Selectable> */
-        $this->outOfBand = Map::of('resource', Selectable::class);
+        $this->outOfBand = Map::of();
         $this->readResources = [];
         $this->writeResources = [];
         $this->outOfBandResources = [];
@@ -52,7 +52,7 @@ final class Select implements Watch
             $this->outOfBand->empty()
         ) {
             /** @var Set<Selectable> */
-            $nothingReady = Set::of(Selectable::class);
+            $nothingReady = Set::of();
 
             return new Ready($nothingReady, $nothingReady, $nothingReady);
         }
@@ -86,49 +86,37 @@ final class Select implements Watch
 
         /**
          * @var Set<Selectable>
-         * @psalm-suppress MissingClosureParamType
-         * @psalm-suppress PossiblyNullArgument
-         * @psalm-suppress MixedArgument because $resource can't be typed
          */
-        $readable = \array_reduce(
-            $read,
-            function(Set $carry, $resource): Set {
-                return $carry->add(
-                    $this->read->get($resource),
-                );
-            },
-            Set::of(Selectable::class),
-        );
+        $readable = $this
+            ->read
+            ->filter(static fn($resource) => \in_array($resource, $read, true))
+            ->values()
+            ->reduce(
+                Set::of(),
+                static fn(Set $set, $stream): Set => ($set)($stream),
+            );
         /**
          * @var Set<Selectable>
-         * @psalm-suppress MissingClosureParamType
-         * @psalm-suppress PossiblyNullArgument
-         * @psalm-suppress MixedArgument because $resource can't be typed
          */
-        $writable = \array_reduce(
-            $write,
-            function(Set $carry, $resource): Set {
-                return $carry->add(
-                    $this->write->get($resource),
-                );
-            },
-            Set::of(Selectable::class),
-        );
+        $writable = $this
+            ->write
+            ->filter(static fn($resource) => \in_array($resource, $write ?? [], true))
+            ->values()
+            ->reduce(
+                Set::of(),
+                static fn(Set $set, $stream): Set => ($set)($stream),
+            );
         /**
          * @var Set<Selectable>
-         * @psalm-suppress MissingClosureParamType
-         * @psalm-suppress PossiblyNullArgument
-         * @psalm-suppress MixedArgument because $resource can't be typed
          */
-        $outOfBandReady = \array_reduce(
-            $outOfBand,
-            function(Set $carry, $resource): Set {
-                return $carry->add(
-                    $this->outOfBand->get($resource),
-                );
-            },
-            Set::of(Selectable::class),
-        );
+        $outOfBandReady = $this
+            ->outOfBand
+            ->filter(static fn($resource) => \in_array($resource, $outOfBand ?? [], true))
+            ->values()
+            ->reduce(
+                Set::of(),
+                static fn(Set $set, $stream): Set => ($set)($stream),
+            );
 
         return new Ready($readable, $writable, $outOfBandReady);
     }

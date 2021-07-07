@@ -52,9 +52,9 @@ class LoggerTest extends TestCase
                     ->expects($this->once())
                     ->method('__invoke')
                     ->willReturn($expected = new Ready(
-                        ISet::of(Selectable::class, ...$read),
-                        ISet::of(Selectable::class, ...$write),
-                        ISet::of(Selectable::class, ...$outOfBand),
+                        ISet::of(...$read),
+                        ISet::of(...$write),
+                        ISet::of(...$outOfBand),
                     ));
                 $logger = $this->createMock(LoggerInterface::class);
                 $logger

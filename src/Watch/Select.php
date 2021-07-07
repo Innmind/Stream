@@ -9,7 +9,6 @@ use Innmind\Stream\{
     Readable,
     Writable,
     WatchFailed,
-    Exception\SelectFailed,
 };
 use Innmind\TimeContinuum\ElapsedPeriod;
 use Innmind\Immutable\{

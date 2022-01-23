@@ -24,13 +24,19 @@ final class SeekingSizeDoesntFlagTheStreamEnd implements Property
 
     public function ensureHeldBy(object $stream): object
     {
-        Assert::assertNull($stream->seek(
-            new Position($stream->size()->match(
-                static fn($size) => $size->toInt(),
-                static fn() => 0,
-            )),
-            Position\Mode::fromStart(),
-        ));
+        Assert::assertSame(
+            $stream,
+            $stream->seek(
+                new Position($stream->size()->match(
+                    static fn($size) => $size->toInt(),
+                    static fn() => 0,
+                )),
+                Position\Mode::fromStart(),
+            )->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         Assert::assertFalse($stream->end());
 
         return $stream;

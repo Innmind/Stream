@@ -48,6 +48,9 @@ final class SeekingPositionHigherThanSizeMustThrowAnException implements Propert
                         ),
                 ),
                 Position\Mode::fromStart(),
+            )->match(
+                static fn() => null,
+                static fn($e) => throw $e,
             );
 
             Assert::fail('It must throw an exception');

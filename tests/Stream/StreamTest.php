@@ -72,11 +72,29 @@ class StreamTest extends TestCase
         \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
-        $this->assertNull($stream->seek(new Position(3)));
+        $this->assertSame(
+            $stream,
+            $stream->seek(new Position(3))->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(3, $stream->position()->toInt());
-        $this->assertNull($stream->seek(new Position(3), Mode::fromCurrentPosition()));
+        $this->assertSame(
+            $stream,
+            $stream->seek(new Position(3), Mode::fromCurrentPosition())->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(6, $stream->position()->toInt());
-        $this->assertNull($stream->seek(new Position(3)));
+        $this->assertSame(
+            $stream,
+            $stream->seek(new Position(3))->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(3, $stream->position()->toInt());
     }
 
@@ -88,7 +106,13 @@ class StreamTest extends TestCase
         $stream = new Stream($resource);
         $stream->close();
 
-        $this->assertNull($stream->seek(new Position(1)));
+        $this->assertSame(
+            $stream,
+            $stream->seek(new Position(1))->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
     }
 
     public function testRewind()
@@ -98,7 +122,13 @@ class StreamTest extends TestCase
         $stream = new Stream($resource);
         $stream->seek(new Position(3));
 
-        $this->assertNull($stream->rewind());
+        $this->assertSame(
+            $stream,
+            $stream->rewind()->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(0, $stream->position()->toInt());
     }
 
@@ -111,7 +141,13 @@ class StreamTest extends TestCase
         $stream->seek(new Position(2));
         $stream->close();
 
-        $this->assertNull($stream->rewind());
+        $this->assertSame(
+            $stream,
+            $stream->rewind()->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(0, $stream->position()->toInt());
     }
 
@@ -205,7 +241,10 @@ class StreamTest extends TestCase
 
         $this->expectException(PositionNotSeekable::class);
 
-        $stream->seek(new Position(42));
+        $stream->seek(new Position(42))->match(
+            static fn() => null,
+            static fn($e) => throw $e,
+        );
     }
 
     public function testDoesntTryToRewindStdin()
@@ -218,7 +257,11 @@ class StreamTest extends TestCase
         $this->expectException(PositionNotSeekable::class);
 
         (new Stream(\fopen('php://stdin', 'rb')))
-            ->seek(new Position(0));
+            ->seek(new Position(0))
+            ->match(
+                static fn() => null,
+                static fn($e) => throw $e,
+            );
     }
 
     public function testDoesntTryToRewindStdout()
@@ -231,7 +274,11 @@ class StreamTest extends TestCase
         $this->expectException(PositionNotSeekable::class);
 
         (new Stream(\fopen('php://stdout', 'rb')))
-            ->seek(new Position(0));
+            ->seek(new Position(0))
+            ->match(
+                static fn() => null,
+                static fn($e) => throw $e,
+            );
     }
 
     public function testDoesntTryToRewindStderr()
@@ -244,7 +291,11 @@ class StreamTest extends TestCase
         $this->expectException(PositionNotSeekable::class);
 
         (new Stream(\fopen('php://stderr', 'rb')))
-            ->seek(new Position(0));
+            ->seek(new Position(0))
+            ->match(
+                static fn() => null,
+                static fn($e) => throw $e,
+            );
     }
 
     public function testThrowWhenSeekingAboveResourceSizeEvenForConcreteFiles()
@@ -255,6 +306,9 @@ class StreamTest extends TestCase
 
         $this->expectException(PositionNotSeekable::class);
 
-        $stream->seek(new Position(42));
+        $stream->seek(new Position(42))->match(
+            static fn() => null,
+            static fn($e) => throw $e,
+        );
     }
 }

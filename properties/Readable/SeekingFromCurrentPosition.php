@@ -36,10 +36,16 @@ final class SeekingFromCurrentPosition implements Property
     public function ensureHeldBy(object $stream): object
     {
         $current = $stream->position()->toInt();
-        Assert::assertNull($stream->seek(
-            new Position($this->position),
-            Position\Mode::fromCurrentPosition(),
-        ));
+        Assert::assertSame(
+            $stream,
+            $stream->seek(
+                new Position($this->position),
+                Position\Mode::fromCurrentPosition(),
+            )->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         Assert::assertGreaterThan(
             $current,
             $stream->position()->toInt(),

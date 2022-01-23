@@ -57,14 +57,18 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->read->position();
     }
 
-    public function seek(Position $position, Mode $mode = null): void
+    /** @psalm-suppress InvalidReturnType */
+    public function seek(Position $position, Mode $mode = null): Either
     {
-        $this->read->seek($position, $mode);
+        /** @psalm-suppress InvalidReturnStatement */
+        return $this->read->seek($position, $mode)->map(fn() => $this);
     }
 
-    public function rewind(): void
+    /** @psalm-suppress InvalidReturnType */
+    public function rewind(): Either
     {
-        $this->read->rewind();
+        /** @psalm-suppress InvalidReturnStatement */
+        return $this->read->rewind()->map(fn() => $this);
     }
 
     public function end(): bool

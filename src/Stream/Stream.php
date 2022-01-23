@@ -69,42 +69,35 @@ final class Stream implements StreamInterface
         return new Position(\ftell($this->resource));
     }
 
-    public function seek(Position $position, Mode $mode = null): void
+    public function seek(Position $position, Mode $mode = null): Either
     {
         if (!$this->seekable) {
-            throw new PositionNotSeekable;
+            /** @var Either<PositionNotSeekable, StreamInterface> */
+            return Either::left(new PositionNotSeekable);
         }
 
         if ($this->closed()) {
-            return;
+            /** @var Either<PositionNotSeekable, StreamInterface> */
+            return Either::right($this);
         }
 
         $previous = $this->position();
         $mode ??= Mode::fromStart();
 
-        $this->assertSeekable($position, $mode);
-
-        $status = \fseek(
-            $this->resource,
-            $position->toInt(),
-            $mode->toInt(),
-        );
-
-        if ($status === -1) {
-            /** @psalm-suppress ImpureMethodCall */
-            \fseek(
-                $this->resource,
-                $previous->toInt(),
-                Mode::fromStart()->toInt(),
-            );
-
-            throw new PositionNotSeekable;
-        }
+        /** @var Either<PositionNotSeekable, StreamInterface> */
+        return $this
+            ->seekable($position, $mode)
+            ->flatMap(fn($stream) => $this->doSeek(
+                $stream,
+                $position,
+                $mode,
+                $previous,
+            ));
     }
 
-    public function rewind(): void
+    public function rewind(): Either
     {
-        $this->seek(new Position(0));
+        return $this->seek(new Position(0));
     }
 
     public function end(): bool
@@ -146,27 +139,52 @@ final class Stream implements StreamInterface
     }
 
     /**
-     * @throws PositionNotSeekable
+     * @return Either<PositionNotSeekable, self>
      */
-    private function assertSeekable(Position $position, Mode $mode): void
+    private function seekable(Position $position, Mode $mode): Either
     {
-        switch ($mode) {
-            case Mode::fromCurrentPosition():
-                $targetPosition = $this->position()->toInt() + $position->toInt();
-                break;
+        $targetPosition = match ($mode) {
+            Mode::fromCurrentPosition() => $this->position()->toInt() + $position->toInt(),
+            default => $position->toInt(),
+        };
 
-            default: // fromStart
-                $targetPosition = $position->toInt();
-                break;
+        return $this
+            ->size()
+            ->filter(static fn($size) => $targetPosition <= $size->toInt())
+            ->match(
+                fn() => Either::right($this),
+                static fn() => Either::left(new PositionNotSeekable),
+            );
+    }
+
+    /**
+     * @return Either<PositionNotSeekable, self>
+     */
+    private function doSeek(
+        self $stream,
+        Position $position,
+        Mode $mode,
+        Position $previous,
+    ): Either {
+        $status = \fseek(
+            $stream->resource,
+            $position->toInt(),
+            $mode->toInt(),
+        );
+
+        if ($status === -1) {
+            /** @psalm-suppress ImpureMethodCall */
+            \fseek(
+                $stream->resource,
+                $previous->toInt(),
+                Mode::fromStart()->toInt(),
+            );
+
+            /** @var Either<PositionNotSeekable, self> */
+            return Either::left(new PositionNotSeekable);
         }
 
-        $assert = $this
-            ->size()
-            ->filter(static fn($size) => $targetPosition > $size->toInt())
-            ->match(
-                static fn() => static fn() => throw new PositionNotSeekable,
-                static fn() => static fn() => null,
-            );
-        $assert();
+        /** @var Either<PositionNotSeekable, self> */
+        return Either::right($stream);
     }
 }

@@ -69,14 +69,18 @@ final class Stream implements Writable, Selectable
         return $this->stream->position();
     }
 
-    public function seek(Position $position, Mode $mode = null): void
+    /** @psalm-suppress InvalidReturnType */
+    public function seek(Position $position, Mode $mode = null): Either
     {
-        $this->stream->seek($position, $mode);
+        /** @psalm-suppress InvalidReturnStatement */
+        return $this->stream->seek($position, $mode)->map(fn() => $this);
     }
 
-    public function rewind(): void
+    /** @psalm-suppress InvalidReturnType */
+    public function rewind(): Either
     {
-        $this->stream->rewind();
+        /** @psalm-suppress InvalidReturnStatement */
+        return $this->stream->rewind()->map(fn() => $this);
     }
 
     public function end(): bool

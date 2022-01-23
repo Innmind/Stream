@@ -63,11 +63,29 @@ class StreamTest extends TestCase
         \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
-        $this->assertNull($stream->seek(new Position(3)));
+        $this->assertSame(
+            $stream,
+            $stream->seek(new Position(3))->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(3, $stream->position()->toInt());
-        $this->assertNull($stream->seek(new Position(3), Mode::fromCurrentPosition()));
+        $this->assertSame(
+            $stream,
+            $stream->seek(new Position(3), Mode::fromCurrentPosition())->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(6, $stream->position()->toInt());
-        $this->assertNull($stream->seek(new Position(3)));
+        $this->assertSame(
+            $stream,
+            $stream->seek(new Position(3))->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(3, $stream->position()->toInt());
     }
 
@@ -78,7 +96,13 @@ class StreamTest extends TestCase
         $stream = new Stream($resource);
         $stream->seek(new Position(3));
 
-        $this->assertNull($stream->rewind());
+        $this->assertSame(
+            $stream,
+            $stream->rewind()->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(0, $stream->position()->toInt());
     }
 

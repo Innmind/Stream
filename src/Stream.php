@@ -8,6 +8,7 @@ use Innmind\Stream\{
     Stream\Size,
     Stream\Position\Mode,
     Exception\FailedToCloseStream,
+    Exception\PositionNotSeekable,
 };
 use Innmind\Immutable\{
     Maybe,
@@ -26,8 +27,16 @@ interface Stream
     public function close(): Either;
     public function closed(): bool;
     public function position(): Position;
-    public function seek(Position $position, Mode $mode = null): void;
-    public function rewind(): void;
+
+    /**
+     * @return Either<PositionNotSeekable, self>
+     */
+    public function seek(Position $position, Mode $mode = null): Either;
+
+    /**
+     * @return Either<PositionNotSeekable, self>
+     */
+    public function rewind(): Either;
     public function end(): bool;
 
     /**

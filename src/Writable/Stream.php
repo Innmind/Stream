@@ -11,8 +11,8 @@ use Innmind\Stream\{
     Stream\Size,
     Stream\Position,
     Stream\Position\Mode,
-    Exception\FailedToWriteToStream,
-    Exception\DataPartiallyWritten,
+    DataPartiallyWritten,
+    FailedToWriteToStream,
 };
 use Innmind\Immutable\{
     Str,

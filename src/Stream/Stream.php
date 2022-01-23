@@ -8,9 +8,9 @@ use Innmind\Stream\{
     Stream\Size,
     Stream\Position,
     Stream\Position\Mode,
+    FailedToCloseStream,
+    PositionNotSeekable,
     Exception\InvalidArgumentException,
-    Exception\FailedToCloseStream,
-    Exception\PositionNotSeekable,
 };
 use Innmind\Immutable\{
     Maybe,

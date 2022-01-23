@@ -7,8 +7,6 @@ use Innmind\Stream\{
     Stream\Position,
     Stream\Size,
     Stream\Position\Mode,
-    Exception\FailedToCloseStream,
-    Exception\PositionNotSeekable,
 };
 use Innmind\Immutable\{
     Maybe,

@@ -9,7 +9,7 @@ use Innmind\Stream\{
     Stream\Position,
     Stream\Position\Mode,
     Stream\Size,
-    Exception\PositionNotSeekable,
+    PositionNotSeekable,
     Exception\InvalidArgumentException
 };
 use Innmind\Immutable\SideEffect;
@@ -232,18 +232,19 @@ class StreamTest extends TestCase
         );
     }
 
-    public function testThrowWhenNotSeekable()
+    public function testReturnErrorWhenNotSeekable()
     {
         $resource = \fopen('php://temp', 'r+');
         \fwrite($resource, 'foobarbaz');
 
         $stream = new Stream($resource);
 
-        $this->expectException(PositionNotSeekable::class);
-
-        $stream->seek(new Position(42))->match(
-            static fn() => null,
-            static fn($e) => throw $e,
+        $this->assertInstanceOf(
+            PositionNotSeekable::class,
+            $stream->seek(new Position(42))->match(
+                static fn() => null,
+                static fn($e) => $e,
+            ),
         );
     }
 
@@ -252,16 +253,17 @@ class StreamTest extends TestCase
         $this->assertInstanceOf(Stream::class, new Stream(\fopen('php://stdin', 'rb')));
     }
 
-    public function testThrowWhenTryingToSeekStdin()
+    public function testReturnErrorWhenTryingToSeekStdin()
     {
-        $this->expectException(PositionNotSeekable::class);
-
-        (new Stream(\fopen('php://stdin', 'rb')))
-            ->seek(new Position(0))
-            ->match(
-                static fn() => null,
-                static fn($e) => throw $e,
-            );
+        $this->assertInstanceOf(
+            PositionNotSeekable::class,
+            (new Stream(\fopen('php://stdin', 'rb')))
+                ->seek(new Position(0))
+                ->match(
+                    static fn() => null,
+                    static fn($e) => $e,
+                ),
+        );
     }
 
     public function testDoesntTryToRewindStdout()
@@ -269,16 +271,17 @@ class StreamTest extends TestCase
         $this->assertInstanceOf(Stream::class, new Stream(\fopen('php://stdout', 'rb')));
     }
 
-    public function testThrowWhenTryingToSeekStdout()
+    public function testReturnErrorWhenTryingToSeekStdout()
     {
-        $this->expectException(PositionNotSeekable::class);
-
-        (new Stream(\fopen('php://stdout', 'rb')))
-            ->seek(new Position(0))
-            ->match(
-                static fn() => null,
-                static fn($e) => throw $e,
-            );
+        $this->assertInstanceOf(
+            PositionNotSeekable::class,
+            (new Stream(\fopen('php://stdout', 'rb')))
+                ->seek(new Position(0))
+                ->match(
+                    static fn() => null,
+                    static fn($e) => $e,
+                ),
+        );
     }
 
     public function testDoesntTryToRewindStderr()
@@ -286,29 +289,31 @@ class StreamTest extends TestCase
         $this->assertInstanceOf(Stream::class, new Stream(\fopen('php://stderr', 'rb')));
     }
 
-    public function testThrowWhenTryingToSeekStderr()
+    public function testReturnErrorWhenTryingToSeekStderr()
     {
-        $this->expectException(PositionNotSeekable::class);
-
-        (new Stream(\fopen('php://stderr', 'rb')))
-            ->seek(new Position(0))
-            ->match(
-                static fn() => null,
-                static fn($e) => throw $e,
-            );
+        $this->assertInstanceOf(
+            PositionNotSeekable::class,
+            (new Stream(\fopen('php://stderr', 'rb')))
+                ->seek(new Position(0))
+                ->match(
+                    static fn() => null,
+                    static fn($e) => $e,
+                ),
+        );
     }
 
-    public function testThrowWhenSeekingAboveResourceSizeEvenForConcreteFiles()
+    public function testReturnErrorWhenSeekingAboveResourceSizeEvenForConcreteFiles()
     {
         $path = \tempnam(\sys_get_temp_dir(), 'lazy_stream');
         \file_put_contents($path, 'lorem ipsum dolor');
         $stream = new Stream(\fopen($path, 'r'));
 
-        $this->expectException(PositionNotSeekable::class);
-
-        $stream->seek(new Position(42))->match(
-            static fn() => null,
-            static fn($e) => throw $e,
+        $this->assertInstanceOf(
+            PositionNotSeekable::class,
+            $stream->seek(new Position(42))->match(
+                static fn() => null,
+                static fn($e) => $e,
+            ),
         );
     }
 }

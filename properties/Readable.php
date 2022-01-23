@@ -34,7 +34,7 @@ final class Readable
                 Set\Integers::above(0),
             ),
             Set\Property::of(
-                Readable\SeekingPositionHigherThanSizeMustThrowAnException::class,
+                Readable\SeekingPositionHigherThanSizeMustReturnAnError::class,
                 Set\Integers::above(0),
             ),
             Set\Property::of(

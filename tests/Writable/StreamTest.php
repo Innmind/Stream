@@ -10,8 +10,8 @@ use Innmind\Stream\{
     Stream\Position,
     Stream\Position\Mode,
     Stream\Size,
-    Exception\DataPartiallyWritten,
-    Exception\FailedToWriteToStream,
+    DataPartiallyWritten,
+    FailedToWriteToStream,
     Exception\InvalidArgumentException
 };
 use Innmind\Immutable\{
@@ -164,17 +164,18 @@ class StreamTest extends TestCase
         $this->assertSame('foobarbaz', \stream_get_contents($resource));
     }
 
-    public function testThrowWhenWritingToClosedStream()
+    public function testReturnErrorWhenWritingToClosedStream()
     {
         $resource = \tmpfile();
         $stream = new Stream($resource);
 
-        $this->expectException(FailedToWriteToStream::class);
-
         $stream->close();
-        $stream->write(Str::of('foo'))->match(
-            static fn() => null,
-            static fn($e) => throw $e,
+        $this->assertInstanceOf(
+            FailedToWriteToStream::class,
+            $stream->write(Str::of('foo'))->match(
+                static fn() => null,
+                static fn($e) => $e,
+            ),
         );
     }
 
@@ -183,33 +184,31 @@ class StreamTest extends TestCase
         $resource = \fopen('php://temp', 'r');
         $stream = new Stream($resource);
 
-        $this->expectException(FailedToWriteToStream::class);
-
-        $stream->write(Str::of('foo'))->match(
-            static fn() => null,
-            static fn($e) => throw $e,
+        $this->assertInstanceOf(
+            FailedToWriteToStream::class,
+            $stream->write(Str::of('foo'))->match(
+                static fn() => null,
+                static fn($e) => $e,
+            ),
         );
     }
 
-    public function testThrowWhenDataPartiallyWritten()
+    public function testReturnErrorWhenDataPartiallyWritten()
     {
         $resource = \fopen('php://temp', 'w');
         $stream = new Stream($resource);
 
-        try {
-            // because it doesn't use ASCII encoding
-            $stream->write($data = Str::of('🤔'))->match(
-                static fn() => null,
-                static fn($e) => throw $e,
-            );
-            $this->fail('it should throw');
-        } catch (DataPartiallyWritten $e) {
-            $this->assertSame($data, $e->data());
-            $this->assertSame(4, $e->written());
-            $this->assertSame(
-                '4 out of 1 written, it seems you are not using the correct string encoding',
-                $e->getMessage(),
-            );
-        }
+        // because it doesn't use ASCII encoding
+        $error = $stream->write($data = Str::of('🤔'))->match(
+            static fn() => null,
+            static fn($e) => $e,
+        );
+        $this->assertInstanceOf(DataPartiallyWritten::class, $error);
+        $this->assertSame($data, $error->data());
+        $this->assertSame(4, $error->written());
+        $this->assertSame(
+            '4 out of 1 written, it seems you are not using the correct string encoding',
+            $error->message(),
+        );
     }
 }

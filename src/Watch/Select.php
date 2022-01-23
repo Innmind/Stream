@@ -161,7 +161,7 @@ final class Select implements Watch
 
     public function forOutOfBand(
         Selectable $outOfBand,
-        Selectable ...$outOfBands
+        Selectable ...$outOfBands,
     ): Watch {
         $self = clone $this;
         $self->outOfBand = ($self->outOfBand)(

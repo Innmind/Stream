@@ -17,7 +17,7 @@ class ReadyTest extends TestCase
         $ready = new Ready(
             $read = Set::of(Selectable::class),
             $write = Set::of(Selectable::class),
-            $oob = Set::of(Selectable::class)
+            $oob = Set::of(Selectable::class),
         );
 
         $this->assertSame($read, $ready->toRead());

@@ -31,7 +31,7 @@ class NonBlockingTest extends TestCase
 
         $this->assertSame(
             $expected,
-            (new NonBlocking(new Stream($expected)))->resource()
+            (new NonBlocking(new Stream($expected)))->resource(),
         );
     }
 

@@ -45,7 +45,7 @@ class SelectTest extends TestCase
     {
         $this->assertInstanceOf(
             Watch::class,
-            new Select(new ElapsedPeriod(0))
+            new Select(new ElapsedPeriod(0)),
         );
     }
 

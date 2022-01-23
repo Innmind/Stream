@@ -16,6 +16,7 @@ use Innmind\Url\Path;
 use Innmind\Immutable\{
     Str,
     Maybe,
+    Either,
 };
 
 final class Stream implements Readable, Selectable
@@ -97,9 +98,9 @@ final class Stream implements Readable, Selectable
         return $this->stream->size();
     }
 
-    public function close(): void
+    public function close(): Either
     {
-        $this->stream->close();
+        return $this->stream->close();
     }
 
     public function closed(): bool

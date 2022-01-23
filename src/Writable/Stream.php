@@ -12,7 +12,7 @@ use Innmind\Stream\{
     Stream\Position,
     Stream\Position\Mode,
     Exception\FailedToWriteToStream,
-    Exception\DataPartiallyWritten
+    Exception\DataPartiallyWritten,
 };
 use Innmind\Immutable\{
     Str,
@@ -89,9 +89,9 @@ final class Stream implements Writable, Selectable
         return $this->stream->size();
     }
 
-    public function close(): void
+    public function close(): Either
     {
-        $this->stream->close();
+        return $this->stream->close();
     }
 
     public function closed(): bool

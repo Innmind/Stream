@@ -13,7 +13,10 @@ use Innmind\Stream\{
     Exception\InvalidArgumentException
 };
 use Innmind\Url\Path;
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    SideEffect,
+};
 use PHPUnit\Framework\TestCase;
 use Innmind\BlackBox\PHPUnit\BlackBox;
 use Fixtures\Innmind\Stream\Readable as Fixture;
@@ -182,7 +185,13 @@ class StreamTest extends TestCase
         $stream = new Stream($resource);
 
         $this->assertFalse($stream->closed());
-        $this->assertNull($stream->close());
+        $this->assertInstanceOf(
+            SideEffect::class,
+            $stream->close()->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertTrue($stream->closed());
     }
 

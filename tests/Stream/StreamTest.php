@@ -12,6 +12,7 @@ use Innmind\Stream\{
     Exception\PositionNotSeekable,
     Exception\InvalidArgumentException
 };
+use Innmind\Immutable\SideEffect;
 use PHPUnit\Framework\TestCase;
 
 class StreamTest extends TestCase
@@ -157,7 +158,13 @@ class StreamTest extends TestCase
         $stream = new Stream($resource);
 
         $this->assertFalse($stream->closed());
-        $this->assertNull($stream->close());
+        $this->assertInstanceOf(
+            SideEffect::class,
+            $stream->close()->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertTrue($stream->closed());
     }
 
@@ -180,7 +187,13 @@ class StreamTest extends TestCase
         $stream = new Stream($resource);
         $stream->close();
 
-        $this->assertNull($stream->close());
+        $this->assertInstanceOf(
+            SideEffect::class,
+            $stream->close()->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
     }
 
     public function testThrowWhenNotSeekable()

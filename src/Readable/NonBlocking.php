@@ -15,6 +15,7 @@ use Innmind\Stream\{
 use Innmind\Immutable\{
     Str,
     Maybe,
+    Either,
 };
 
 final class NonBlocking implements Readable, Selectable
@@ -81,9 +82,9 @@ final class NonBlocking implements Readable, Selectable
         return $this->stream->size();
     }
 
-    public function close(): void
+    public function close(): Either
     {
-        $this->stream->close();
+        return $this->stream->close();
     }
 
     public function closed(): bool

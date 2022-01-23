@@ -15,6 +15,7 @@ use Innmind\Immutable\{
     Str,
     Maybe,
     Either,
+    SideEffect,
 };
 
 final class Bidirectional implements BidirectionalInterface, Selectable
@@ -41,9 +42,9 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->resource;
     }
 
-    public function close(): void
+    public function close(): Either
     {
-        $this->write->close();
+        return $this->write->close();
     }
 
     public function closed(): bool

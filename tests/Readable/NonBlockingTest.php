@@ -12,7 +12,10 @@ use Innmind\Stream\{
     Stream\Position\Mode,
     Stream\Size
 };
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    SideEffect,
+};
 use PHPUnit\Framework\TestCase;
 
 class NonBlockingTest extends TestCase
@@ -145,7 +148,13 @@ class NonBlockingTest extends TestCase
         $stream = new NonBlocking(new Stream($resource));
 
         $this->assertFalse($stream->closed());
-        $this->assertNull($stream->close());
+        $this->assertInstanceOf(
+            SideEffect::class,
+            $stream->close()->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertTrue($stream->closed());
     }
 

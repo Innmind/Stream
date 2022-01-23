@@ -14,7 +14,10 @@ use Innmind\Stream\{
     Exception\FailedToWriteToStream,
     Exception\InvalidArgumentException
 };
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    SideEffect,
+};
 use PHPUnit\Framework\TestCase;
 
 class StreamTest extends TestCase
@@ -111,7 +114,13 @@ class StreamTest extends TestCase
         $stream = new Stream($resource);
 
         $this->assertFalse($stream->closed());
-        $this->assertNull($stream->close());
+        $this->assertInstanceOf(
+            SideEffect::class,
+            $stream->close()->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertTrue($stream->closed());
     }
 

@@ -12,7 +12,11 @@ use Innmind\Stream\{
     Exception\FailedToCloseStream,
     Exception\PositionNotSeekable,
 };
-use Innmind\Immutable\Maybe;
+use Innmind\Immutable\{
+    Maybe,
+    Either,
+    SideEffect,
+};
 
 final class Stream implements StreamInterface
 {
@@ -117,20 +121,22 @@ final class Stream implements StreamInterface
         return $this->size;
     }
 
-    public function close(): void
+    public function close(): Either
     {
         if ($this->closed()) {
-            return;
+            return Either::right(new SideEffect);
         }
 
         /** @psalm-suppress InvalidPropertyAssignmentValue */
         $return = \fclose($this->resource);
 
         if ($return === false) {
-            throw new FailedToCloseStream;
+            return Either::left(new FailedToCloseStream);
         }
 
         $this->closed = true;
+
+        return Either::right(new SideEffect);
     }
 
     public function closed(): bool

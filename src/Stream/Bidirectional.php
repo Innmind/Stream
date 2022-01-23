@@ -14,6 +14,7 @@ use Innmind\Stream\{
 use Innmind\Immutable\{
     Str,
     Maybe,
+    Either,
 };
 
 final class Bidirectional implements BidirectionalInterface, Selectable
@@ -85,9 +86,11 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->read->readLine();
     }
 
-    public function write(Str $data): void
+    /** @psalm-suppress InvalidReturnType */
+    public function write(Str $data): Either
     {
-        $this->write->write($data);
+        /** @psalm-suppress InvalidReturnStatement */
+        return $this->write->write($data)->map(fn() => $this);
     }
 
     public function toString(): string

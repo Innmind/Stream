@@ -17,6 +17,7 @@ use Innmind\Stream\{
 use Innmind\Immutable\{
     Str,
     Maybe,
+    Either,
 };
 
 final class Stream implements Writable, Selectable
@@ -40,21 +41,27 @@ final class Stream implements Writable, Selectable
         return $this->resource;
     }
 
-    public function write(Str $data): void
+    public function write(Str $data): Either
     {
         if ($this->closed()) {
-            throw new FailedToWriteToStream;
+            /** @var Either<FailedToWriteToStream|DataPartiallyWritten, Writable> */
+            return Either::left(new FailedToWriteToStream);
         }
 
         $written = @\fwrite($this->resource, $data->toString());
 
         if ($written === false) {
-            throw new FailedToWriteToStream;
+            /** @var Either<FailedToWriteToStream|DataPartiallyWritten, Writable> */
+            return Either::left(new FailedToWriteToStream);
         }
 
         if ($written !== $data->length()) {
-            throw new DataPartiallyWritten($data, $written);
+            /** @var Either<FailedToWriteToStream|DataPartiallyWritten, Writable> */
+            return Either::left(new DataPartiallyWritten($data, $written));
         }
+
+        /** @var Either<FailedToWriteToStream|DataPartiallyWritten, Writable> */
+        return Either::right($this);
     }
 
     public function position(): Position

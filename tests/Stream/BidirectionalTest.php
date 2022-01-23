@@ -125,7 +125,13 @@ class BidirectionalTest extends TestCase
         $resource = \tmpfile();
         $stream = new Bidirectional($resource);
 
-        $this->assertNull($stream->write(Str::of('foobarbaz')));
+        $this->assertSame(
+            $stream,
+            $stream->write(Str::of('foobarbaz'))->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         \fseek($resource, 0);
         $this->assertSame('foobarbaz', \stream_get_contents($resource));
     }
@@ -138,7 +144,10 @@ class BidirectionalTest extends TestCase
         $this->expectException(FailedToWriteToStream::class);
 
         $stream->close();
-        $stream->write(Str::of('foo'));
+        $stream->write(Str::of('foo'))->match(
+            static fn() => null,
+            static fn($e) => throw $e,
+        );
     }
 
     public function testThrowWhenWriteFailed()
@@ -148,7 +157,10 @@ class BidirectionalTest extends TestCase
 
         $this->expectException(FailedToWriteToStream::class);
 
-        $stream->write(Str::of('foo'));
+        $stream->write(Str::of('foo'))->match(
+            static fn() => null,
+            static fn($e) => throw $e,
+        );
     }
 
     public function testThrowWhenDataPartiallyWritten()
@@ -157,7 +169,11 @@ class BidirectionalTest extends TestCase
         $stream = new Bidirectional($resource);
 
         try {
-            $stream->write($data = Str::of('🤔')); // because it doesn't use ASCII encoding
+            // because it doesn't use ASCII encoding
+            $stream->write($data = Str::of('🤔'))->match(
+                static fn() => null,
+                static fn($e) => throw $e,
+            );
             $this->fail('it should throw');
         } catch (DataPartiallyWritten $e) {
             $this->assertSame($data, $e->data());

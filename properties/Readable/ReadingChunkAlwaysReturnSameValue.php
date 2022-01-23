@@ -41,7 +41,7 @@ final class ReadingChunkAlwaysReturnSameValue implements Property
             static fn() => null,
         );
         Assert::assertIsString($chunk);
-        $stream->seek($position, Mode::fromStart());
+        $stream->seek($position, Mode::fromStart);
         Assert::assertSame(
             $chunk,
             $stream->read($this->chunk)->match(

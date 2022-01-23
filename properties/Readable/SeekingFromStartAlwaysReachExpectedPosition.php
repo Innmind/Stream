@@ -43,7 +43,7 @@ final class SeekingFromStartAlwaysReachExpectedPosition implements Property
                         ),
                     ),
                 ),
-                Position\Mode::fromStart(),
+                Position\Mode::fromStart,
             )->match(
                 static fn($value) => $value,
                 static fn() => null,

@@ -47,7 +47,7 @@ final class SeekingPositionHigherThanSizeMustThrowAnException implements Propert
                             static fn() => 0,
                         ),
                 ),
-                Position\Mode::fromStart(),
+                Position\Mode::fromStart,
             )->match(
                 static fn() => null,
                 static fn($e) => throw $e,

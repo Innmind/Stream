@@ -40,7 +40,7 @@ final class SeekingFromCurrentPosition implements Property
             $stream,
             $stream->seek(
                 new Position($this->position),
-                Position\Mode::fromCurrentPosition(),
+                Position\Mode::fromCurrentPosition,
             )->match(
                 static fn($value) => $value,
                 static fn() => null,

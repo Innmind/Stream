@@ -180,7 +180,7 @@ class StreamTest extends TestCase
         $this->assertSame(3, $stream->position()->toInt());
         $this->assertSame(
             $stream,
-            $stream->seek(new Position(3), Mode::fromCurrentPosition())->match(
+            $stream->seek(new Position(3), Mode::fromCurrentPosition)->match(
                 static fn($value) => $value,
                 static fn() => null,
             ),

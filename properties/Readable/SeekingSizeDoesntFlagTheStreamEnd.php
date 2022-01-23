@@ -31,7 +31,7 @@ final class SeekingSizeDoesntFlagTheStreamEnd implements Property
                     static fn($size) => $size->toInt(),
                     static fn() => 0,
                 )),
-                Position\Mode::fromStart(),
+                Position\Mode::fromStart,
             )->match(
                 static fn($value) => $value,
                 static fn() => null,

@@ -82,7 +82,7 @@ final class Stream implements StreamInterface
         }
 
         $previous = $this->position();
-        $mode ??= Mode::fromStart();
+        $mode ??= Mode::fromStart;
 
         /** @var Either<PositionNotSeekable, StreamInterface> */
         return $this
@@ -144,8 +144,8 @@ final class Stream implements StreamInterface
     private function seekable(Position $position, Mode $mode): Either
     {
         $targetPosition = match ($mode) {
-            Mode::fromCurrentPosition() => $this->position()->toInt() + $position->toInt(),
-            default => $position->toInt(),
+            Mode::fromStart => $position->toInt(),
+            Mode::fromCurrentPosition => $this->position()->toInt() + $position->toInt(),
         };
 
         return $this
@@ -177,7 +177,7 @@ final class Stream implements StreamInterface
             \fseek(
                 $stream->resource,
                 $previous->toInt(),
-                Mode::fromStart()->toInt(),
+                Mode::fromStart->toInt(),
             );
 
             /** @var Either<PositionNotSeekable, self> */

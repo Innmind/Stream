@@ -100,8 +100,8 @@ class SelectTest extends TestCase
     public function testInvokeWhenNoStream()
     {
         $ready = (new Select(new ElapsedPeriod(0)))()->match(
-            static fn() => null,
             static fn($ready) => $ready,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Ready::class, $ready);
@@ -136,8 +136,8 @@ class SelectTest extends TestCase
         \stream_socket_sendto($oobSocket, 'foo', \STREAM_OOB);
 
         $ready = $select()->match(
-            static fn() => null,
             static fn($ready) => $ready,
+            static fn() => null,
         );
 
         $this->assertInstanceOf(Ready::class, $ready);
@@ -163,8 +163,8 @@ class SelectTest extends TestCase
         }
 
         $ready = $select()->match(
-            static fn() => null,
             static fn($ready) => $ready,
+            static fn() => null,
         );
 
         $this->assertCount(1, $ready->toRead());
@@ -210,8 +210,8 @@ class SelectTest extends TestCase
         $this->assertNotSame($select2, $select);
 
         $streams = $select2()->match(
-            static fn() => null,
             static fn($ready) => $ready,
+            static fn() => null,
         );
 
         $this->assertCount(0, $streams->toRead());

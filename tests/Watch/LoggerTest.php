@@ -74,8 +74,8 @@ class LoggerTest extends TestCase
                 $watch = new Logger($inner, $logger);
 
                 $this->assertSame($expected, $watch()->match(
-                    static fn() => null,
                     static fn($ready) => $ready,
+                    static fn() => null,
                 ));
             });
     }
@@ -119,8 +119,8 @@ class LoggerTest extends TestCase
                 $this->assertInstanceOf(Logger::class, $watch2);
                 $this->assertNotSame($watch, $watch2);
                 $this->assertSame($expected, $watch2()->match(
-                    static fn() => null,
                     static fn($ready) => $ready,
+                    static fn() => null,
                 ));
             });
     }
@@ -164,8 +164,8 @@ class LoggerTest extends TestCase
                 $this->assertInstanceOf(Logger::class, $watch2);
                 $this->assertNotSame($watch, $watch2);
                 $this->assertSame($expected, $watch2()->match(
-                    static fn() => null,
                     static fn($ready) => $ready,
+                    static fn() => null,
                 ));
             });
     }
@@ -209,8 +209,8 @@ class LoggerTest extends TestCase
                 $this->assertInstanceOf(Logger::class, $watch2);
                 $this->assertNotSame($watch, $watch2);
                 $this->assertSame($expected, $watch2()->match(
-                    static fn() => null,
                     static fn($ready) => $ready,
+                    static fn() => null,
                 ));
             });
     }
@@ -246,8 +246,8 @@ class LoggerTest extends TestCase
         $this->assertInstanceOf(Logger::class, $watch2);
         $this->assertNotSame($watch, $watch2);
         $this->assertSame($expected, $watch2()->match(
-            static fn() => null,
             static fn($ready) => $ready,
+            static fn() => null,
         ));
     }
 }

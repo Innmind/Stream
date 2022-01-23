@@ -28,7 +28,6 @@ final class Readable
             Set\Property::of(Readable\Close::class),
             Set\Property::of(Readable\SizeNeverChange::class),
             Set\Property::of(Readable\RewindPlacePositionToZero::class),
-            Set\Property::of(Readable\CastAlwaysReturnAString::class),
             Set\Property::of(Readable\SeekingSizeDoesntFlagTheStreamEnd::class),
             Set\Property::of(
                 Readable\SeekingFromStartAlwaysReachExpectedPosition::class,
@@ -43,7 +42,7 @@ final class Readable
                 Set\Integers::between(1, 100),
             ),
             Set\Property::of(
-                Readable\ReadingAlwaysReturnAValue::class,
+                Readable\ReadingAlwaysReturnAValueForOpenedStreams::class,
                 // upper limit set to MAX_INT for a 32bits system as php won't
                 // allow to read a stream above this size (even on 64bits systems)
                 // php also tries to allocate the given amount in memory even
@@ -51,12 +50,13 @@ final class Readable
                 // The division by 1000 is here only to avoid this said OOM error
                 Set\Integers::between(0, (int) (2_147_483_647 / 1000)),
             ),
+            Set\Property::of(Readable\ReadingNeverReturnAValueForClosedStreams::class),
             Set\Property::of(Readable\PositionCanNeverBeHigherThanSize::class),
             Set\Property::of(Readable\ReadingUpToSizeDoesntFlagStreamEnd::class),
             Set\Property::of(Readable\ReadingAboveSizeFlagStreamEnd::class),
             Set\Property::of(Readable\ReadingRestFlagStreamEnd::class),
-            Set\Property::of(Readable\ReadingRestAlwaysReturnAValue::class),
-            Set\Property::of(Readable\ReadingLineAlwaysReturnAValue::class),
+            Set\Property::of(Readable\ReadingRestAlwaysReturnAValueForOpenedStreams::class),
+            Set\Property::of(Readable\ReadingRestNeverReturnAValueForClosedStreams::class),
             Set\Property::of(
                 Readable\ReadingChunkAlwaysReturnSameValue::class,
                 Set\Integers::between(1, 100),

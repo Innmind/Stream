@@ -23,6 +23,22 @@ final class Readable
     }
 
     /**
+     * @return Set<Stream>
+     */
+    public static function closed(): Set
+    {
+        return Set\Decorate::mutable(
+            static function(string $string): Stream {
+                $stream = Stream::ofContent($string);
+                $stream->close();
+
+                return $stream;
+            },
+            Set\Unicode::strings(),
+        );
+    }
+
+    /**
      * Simulate large files
      *
      * @return Set<Stream>

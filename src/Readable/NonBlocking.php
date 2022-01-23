@@ -47,12 +47,12 @@ final class NonBlocking implements Readable, Selectable
         return $this->stream->resource();
     }
 
-    public function read(int $length = null): Str
+    public function read(int $length = null): Maybe
     {
         return $this->stream->read($length);
     }
 
-    public function readLine(): Str
+    public function readLine(): Maybe
     {
         return $this->stream->readLine();
     }
@@ -96,7 +96,7 @@ final class NonBlocking implements Readable, Selectable
         return $this->stream->closed();
     }
 
-    public function toString(): string
+    public function toString(): Maybe
     {
         return $this->stream->toString();
     }

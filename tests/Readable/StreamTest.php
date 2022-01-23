@@ -18,7 +18,10 @@ use Innmind\Immutable\{
     SideEffect,
 };
 use PHPUnit\Framework\TestCase;
-use Innmind\BlackBox\PHPUnit\BlackBox;
+use Innmind\BlackBox\{
+    PHPUnit\BlackBox,
+    Set,
+};
 use Fixtures\Innmind\Stream\Readable as Fixture;
 use Properties\Innmind\Stream\Readable as PReadable;
 
@@ -60,13 +63,25 @@ class StreamTest extends TestCase
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
-        $text = $stream->read(3);
+        $text = $stream->read(3)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Str::class, $text);
         $this->assertSame('foo', $text->toString());
-        $this->assertSame('bar', $stream->read(3)->toString());
-        $this->assertSame('baz', $stream->read(3)->toString());
-        $this->assertSame('', $stream->read(3)->toString());
+        $this->assertSame('bar', $stream->read(3)->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
+        $this->assertSame('baz', $stream->read(3)->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
+        $this->assertSame('', $stream->read(3)->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
     }
 
     public function testReadOnceClosed()
@@ -76,7 +91,10 @@ class StreamTest extends TestCase
         $stream = new Stream($resource);
         $stream->close();
 
-        $this->assertSame('', $stream->read()->toString());
+        $this->assertNull($stream->read()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testReadRemaining()
@@ -85,7 +103,10 @@ class StreamTest extends TestCase
         \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
         $stream->seek(new Position(3));
-        $text = $stream->read();
+        $text = $stream->read()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Str::class, $text);
         $this->assertSame('barbaz', $text->toString());
@@ -96,13 +117,25 @@ class StreamTest extends TestCase
         $resource = \tmpfile();
         \fwrite($resource, "foo\nbar\nbaz");
         $stream = new Stream($resource);
-        $line = $stream->readLine();
+        $line = $stream->readLine()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Str::class, $line);
         $this->assertSame("foo\n", $line->toString());
-        $this->assertSame("bar\n", $stream->readLine()->toString());
-        $this->assertSame('baz', $stream->readLine()->toString());
-        $this->assertSame('', $stream->readLine()->toString());
+        $this->assertSame("bar\n", $stream->readLine()->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
+        $this->assertSame('baz', $stream->readLine()->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
+        $this->assertNull($stream->readLine()->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
     }
 
     public function testReadLineOnceClosed()
@@ -112,7 +145,10 @@ class StreamTest extends TestCase
         $stream = new Stream($resource);
         $stream->close();
 
-        $this->assertSame('', $stream->readLine()->toString());
+        $this->assertNull($stream->readLine()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testPosition()
@@ -225,7 +261,10 @@ class StreamTest extends TestCase
         \fwrite($resource, 'foobarbaz');
         $stream = new Stream($resource);
 
-        $this->assertSame('foobarbaz', $stream->toString());
+        $this->assertSame('foobarbaz', $stream->toString()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testStringCastOnceClosed()
@@ -235,7 +274,10 @@ class StreamTest extends TestCase
         $stream = new Stream($resource);
         $stream->close();
 
-        $this->assertSame('', $stream->toString());
+        $this->assertNull($stream->toString()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testOpen()
@@ -246,7 +288,10 @@ class StreamTest extends TestCase
         $stream = Stream::open(Path::of($file));
 
         $this->assertInstanceOf(Stream::class, $stream);
-        $this->assertSame('watev', $stream->toString());
+        $this->assertSame('watev', $stream->toString()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testOfContent()
@@ -254,7 +299,10 @@ class StreamTest extends TestCase
         $stream = Stream::ofContent('foo');
 
         $this->assertInstanceOf(Stream::class, $stream);
-        $this->assertSame('foo', $stream->toString());
+        $this->assertSame('foo', $stream->toString()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     /**
@@ -265,7 +313,10 @@ class StreamTest extends TestCase
         $this
             ->forAll(
                 $property,
-                Fixture::any(),
+                new Set\Either(
+                    Fixture::any(),
+                    Fixture::closed(),
+                ),
             )
             ->filter(static function($property, $stream) {
                 return $property->applicableTo($stream);

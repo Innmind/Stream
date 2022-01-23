@@ -52,25 +52,31 @@ final class Stream implements Readable, Selectable
         return $this->resource;
     }
 
-    public function read(int $length = null): Str
+    public function read(int $length = null): Maybe
     {
         if ($this->closed()) {
-            return Str::of('');
+            /** @var Maybe<Str> */
+            return Maybe::nothing();
         }
 
-        return Str::of((string) \stream_get_contents(
+        $data = \stream_get_contents(
             $this->resource,
             $length ?? -1,
-        ));
+        );
+
+        return Maybe::of(\is_string($data) ? Str::of($data) : null);
     }
 
-    public function readLine(): Str
+    public function readLine(): Maybe
     {
         if ($this->closed()) {
-            return Str::of('');
+            /** @var Maybe<Str> */
+            return Maybe::nothing();
         }
 
-        return Str::of((string) \fgets($this->resource));
+        $line = \fgets($this->resource);
+
+        return Maybe::of(\is_string($line) ? Str::of($line) : null);
     }
 
     public function position(): Position
@@ -112,10 +118,16 @@ final class Stream implements Readable, Selectable
         return $this->stream->closed();
     }
 
-    public function toString(): string
+    public function toString(): Maybe
     {
-        $this->rewind();
+        /** @var Maybe<Str> */
+        $data = $this
+            ->rewind()
+            ->match(
+                fn() => $this->read(),
+                static fn() => Maybe::nothing(),
+            );
 
-        return $this->read()->toString();
+        return $data->map(static fn($data) => $data->toString());
     }
 }

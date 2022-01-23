@@ -81,12 +81,12 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->read->size();
     }
 
-    public function read(int $length = null): Str
+    public function read(int $length = null): Maybe
     {
         return $this->read->read($length);
     }
 
-    public function readLine(): Str
+    public function readLine(): Maybe
     {
         return $this->read->readLine();
     }
@@ -98,7 +98,7 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->write->write($data)->map(fn() => $this);
     }
 
-    public function toString(): string
+    public function toString(): Maybe
     {
         return $this->read->toString();
     }

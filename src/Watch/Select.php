@@ -8,13 +8,12 @@ use Innmind\Stream\{
     Selectable,
     Readable,
     Writable,
-    WatchFailed,
 };
 use Innmind\TimeContinuum\ElapsedPeriod;
 use Innmind\Immutable\{
     Map,
     Set,
-    Either,
+    Maybe,
 };
 
 final class Select implements Watch
@@ -47,7 +46,7 @@ final class Select implements Watch
         $this->outOfBandResources = [];
     }
 
-    public function __invoke(): Either
+    public function __invoke(): Maybe
     {
         if (
             $this->read->empty() &&
@@ -61,7 +60,7 @@ final class Select implements Watch
             /** @var Set<Selectable> */
             $outOfBand = Set::of();
 
-            return Either::right(new Ready($read, $write, $outOfBand));
+            return Maybe::just(new Ready($read, $write, $outOfBand));
         }
 
         $read = $this->readResources;
@@ -79,7 +78,8 @@ final class Select implements Watch
         );
 
         if ($return === false) {
-            return Either::left(new WatchFailed);
+            /** @var Maybe<Ready> */
+            return Maybe::nothing();
         }
 
         /**
@@ -116,7 +116,7 @@ final class Select implements Watch
                 static fn(Set $set, $stream): Set => ($set)($stream),
             );
 
-        return Either::right(new Ready($readable, $writable, $outOfBandReady));
+        return Maybe::just(new Ready($readable, $writable, $outOfBandReady));
     }
 
     public function forRead(Selectable $read, Selectable ...$reads): Watch

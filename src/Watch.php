@@ -4,14 +4,14 @@ declare(strict_types = 1);
 namespace Innmind\Stream;
 
 use Innmind\Stream\Watch\Ready;
-use Innmind\Immutable\Either;
+use Innmind\Immutable\Maybe;
 
 interface Watch
 {
     /**
-     * @return Either<WatchFailed, Ready>
+     * @return Maybe<Ready> Returns nothing when it fails to loojup the streams
      */
-    public function __invoke(): Either;
+    public function __invoke(): Maybe;
 
     /**
      * @param Selectable&Readable $read

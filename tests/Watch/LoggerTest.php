@@ -11,7 +11,7 @@ use Innmind\Stream\{
 };
 use Innmind\Immutable\{
     Set as ISet,
-    Either,
+    Maybe,
 };
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
@@ -54,7 +54,7 @@ class LoggerTest extends TestCase
                 $inner
                     ->expects($this->once())
                     ->method('__invoke')
-                    ->willReturn(Either::right($expected = new Ready(
+                    ->willReturn(Maybe::just($expected = new Ready(
                         ISet::of(...$read),
                         ISet::of(...$write),
                         ISet::of(...$outOfBand),
@@ -97,7 +97,7 @@ class LoggerTest extends TestCase
                 $inner2
                     ->expects($this->once())
                     ->method('__invoke')
-                    ->willReturn(Either::right($expected = new Ready(
+                    ->willReturn(Maybe::just($expected = new Ready(
                         ISet::of(),
                         ISet::of(),
                         ISet::of(),
@@ -142,7 +142,7 @@ class LoggerTest extends TestCase
                 $inner2
                     ->expects($this->once())
                     ->method('__invoke')
-                    ->willReturn(Either::right($expected = new Ready(
+                    ->willReturn(Maybe::just($expected = new Ready(
                         ISet::of(),
                         ISet::of(),
                         ISet::of(),
@@ -187,7 +187,7 @@ class LoggerTest extends TestCase
                 $inner2
                     ->expects($this->once())
                     ->method('__invoke')
-                    ->willReturn(Either::right($expected = new Ready(
+                    ->willReturn(Maybe::just($expected = new Ready(
                         ISet::of(),
                         ISet::of(),
                         ISet::of(),
@@ -227,7 +227,7 @@ class LoggerTest extends TestCase
         $inner2
             ->expects($this->once())
             ->method('__invoke')
-            ->willReturn(Either::right($expected = new Ready(
+            ->willReturn(Maybe::just($expected = new Ready(
                 ISet::of(),
                 ISet::of(),
                 ISet::of(),

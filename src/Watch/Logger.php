@@ -6,9 +6,8 @@ namespace Innmind\Stream\Watch;
 use Innmind\Stream\{
     Watch,
     Selectable,
-    WatchFailed,
 };
-use Innmind\Immutable\Either;
+use Innmind\Immutable\Maybe;
 use Psr\Log\LoggerInterface;
 
 final class Logger implements Watch
@@ -22,7 +21,7 @@ final class Logger implements Watch
         $this->logger = $logger;
     }
 
-    public function __invoke(): Either
+    public function __invoke(): Maybe
     {
         return ($this->watch)()->map(fn($ready) => $this->log($ready));
     }

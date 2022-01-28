@@ -89,6 +89,9 @@ final class NonBlocking implements Readable, Selectable
         return $this->stream->end();
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function size(): Maybe
     {
         return $this->stream->size();
@@ -99,6 +102,9 @@ final class NonBlocking implements Readable, Selectable
         return $this->stream->close();
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function closed(): bool
     {
         return $this->stream->closed();

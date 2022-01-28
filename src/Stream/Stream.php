@@ -105,6 +105,9 @@ final class Stream implements StreamInterface
         return \feof($this->resource);
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function size(): Maybe
     {
         if ($this->closed()) {
@@ -138,6 +141,9 @@ final class Stream implements StreamInterface
         return Either::right(new SideEffect);
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function closed(): bool
     {
         /** @psalm-suppress DocblockTypeContradiction */

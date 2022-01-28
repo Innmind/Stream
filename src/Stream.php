@@ -23,6 +23,10 @@ interface Stream
      * @return Either<FailedToCloseStream, SideEffect>
      */
     public function close(): Either;
+
+    /**
+     * @psalm-mutation-free
+     */
     public function closed(): bool;
     public function position(): Position;
 
@@ -38,6 +42,8 @@ interface Stream
     public function end(): bool;
 
     /**
+     * @psalm-mutation-free
+     *
      * @return Maybe<Size>
      */
     public function size(): Maybe;

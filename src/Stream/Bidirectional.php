@@ -55,6 +55,9 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->write->close();
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function closed(): bool
     {
         return $this->write->closed();
@@ -84,6 +87,9 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->read->end();
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function size(): Maybe
     {
         return $this->read->size();

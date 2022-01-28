@@ -28,7 +28,7 @@ class LoggerTest extends TestCase
     {
         $this->assertInstanceOf(
             Watch::class,
-            new Logger(
+            Logger::psr(
                 $this->createMock(Watch::class),
                 $this->createMock(LoggerInterface::class),
             ),
@@ -68,7 +68,7 @@ class LoggerTest extends TestCase
                             'write' => \count($write),
                         ],
                     );
-                $watch = new Logger($inner, $logger);
+                $watch = Logger::psr($inner, $logger);
 
                 $this->assertSame($expected, $watch()->match(
                     static fn($ready) => $ready,
@@ -110,7 +110,7 @@ class LoggerTest extends TestCase
                         ],
                         ['Streams ready: {read} for read, {write} for write'],
                     );
-                $watch = new Logger($inner, $logger);
+                $watch = Logger::psr($inner, $logger);
                 $watch2 = $watch->forRead(...$streams);
 
                 $this->assertInstanceOf(Logger::class, $watch2);
@@ -155,7 +155,7 @@ class LoggerTest extends TestCase
                         ],
                         ['Streams ready: {read} for read, {write} for write'],
                     );
-                $watch = new Logger($inner, $logger);
+                $watch = Logger::psr($inner, $logger);
                 $watch2 = $watch->forWrite(...$streams);
 
                 $this->assertInstanceOf(Logger::class, $watch2);
@@ -191,7 +191,7 @@ class LoggerTest extends TestCase
                 ['Removing a stream from watch list'],
                 ['Streams ready: {read} for read, {write} for write'],
             );
-        $watch = new Logger($inner, $logger);
+        $watch = Logger::psr($inner, $logger);
         $watch2 = $watch->unwatch($stream);
 
         $this->assertInstanceOf(Logger::class, $watch2);

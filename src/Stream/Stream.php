@@ -28,7 +28,7 @@ final class Stream implements StreamInterface
     /**
      * @param resource $resource
      */
-    public function __construct($resource)
+    private function __construct($resource)
     {
         /**
          * @psalm-suppress DocblockTypeContradiction
@@ -46,6 +46,14 @@ final class Stream implements StreamInterface
             $this->seekable = true;
             $this->rewind();
         }
+    }
+
+    /**
+     * @param resource $resource
+     */
+    public static function of($resource): self
+    {
+        return new self($resource);
     }
 
     public function position(): Position

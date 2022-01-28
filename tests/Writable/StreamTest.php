@@ -24,7 +24,7 @@ class StreamTest extends TestCase
 {
     public function testInterface()
     {
-        $stream = new Stream(\tmpfile());
+        $stream = Stream::of(\tmpfile());
 
         $this->assertInstanceOf(Writable::class, $stream);
         $this->assertInstanceOf(Selectable::class, $stream);
@@ -34,14 +34,14 @@ class StreamTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new Stream('foo');
+        Stream::of('foo');
     }
 
     public function testThrowWhenNotAStream()
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new Stream(\imagecreatetruecolor(42, 42));
+        Stream::of(\imagecreatetruecolor(42, 42));
     }
 
     public function testPosition()
@@ -51,7 +51,7 @@ class StreamTest extends TestCase
 
         $this->assertSame(9, \ftell($resource));
 
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $this->assertInstanceOf(Position::class, $stream->position());
         $this->assertSame(0, $stream->position()->toInt());
@@ -61,7 +61,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $this->assertSame(
             $stream,
@@ -93,7 +93,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
         $stream->seek(new Position(3));
 
         $this->assertSame(
@@ -110,7 +110,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $this->assertFalse($stream->end());
         \fread($resource, 10);
@@ -121,7 +121,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $size = $stream->size()->match(
             static fn($size) => $size,
@@ -135,7 +135,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $this->assertFalse($stream->closed());
         $this->assertInstanceOf(
@@ -151,7 +151,7 @@ class StreamTest extends TestCase
     public function testWrite()
     {
         $resource = \tmpfile();
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $this->assertSame(
             $stream,
@@ -167,7 +167,7 @@ class StreamTest extends TestCase
     public function testReturnErrorWhenWritingToClosedStream()
     {
         $resource = \tmpfile();
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $stream->close();
         $this->assertInstanceOf(
@@ -182,7 +182,7 @@ class StreamTest extends TestCase
     public function testThrowWhenWriteFailed()
     {
         $resource = \fopen('php://temp', 'r');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $this->assertInstanceOf(
             FailedToWriteToStream::class,
@@ -196,7 +196,7 @@ class StreamTest extends TestCase
     public function testReturnErrorWhenDataPartiallyWritten()
     {
         $resource = \fopen('php://temp', 'w');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         // because it doesn't use ASCII encoding
         $error = $stream->write($data = Str::of('🤔'))->match(

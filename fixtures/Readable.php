@@ -56,7 +56,7 @@ final class Readable
                     \fwrite($resource, $chunk);
                 }
 
-                return new Stream($resource);
+                return Stream::of($resource);
             },
             Set\Unicode::strings(),
             Set\Integers::between(1, 100),

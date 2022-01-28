@@ -19,7 +19,7 @@ class StreamTest extends TestCase
 {
     public function testInterface()
     {
-        $stream = new Stream(\tmpfile());
+        $stream = Stream::of(\tmpfile());
 
         $this->assertInstanceOf(StreamInterface::class, $stream);
     }
@@ -28,14 +28,14 @@ class StreamTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new Stream('foo');
+        Stream::of('foo');
     }
 
     public function testThrowWhenNotAStream()
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new Stream(\imagecreatetruecolor(42, 42));
+        Stream::of(\imagecreatetruecolor(42, 42));
     }
 
     public function testPosition()
@@ -45,7 +45,7 @@ class StreamTest extends TestCase
 
         $this->assertSame(9, \ftell($resource));
 
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $this->assertInstanceOf(Position::class, $stream->position());
         $this->assertSame(0, $stream->position()->toInt());
@@ -55,12 +55,12 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
         $stream->close();
 
         $this->assertSame(0, $stream->position()->toInt());
 
-        $stream = new Stream(\stream_socket_server('tcp://127.0.0.1:1235'));
+        $stream = Stream::of(\stream_socket_server('tcp://127.0.0.1:1235'));
         $stream->close();
 
         $this->assertSame(0, $stream->position()->toInt());
@@ -70,7 +70,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $this->assertSame(
             $stream,
@@ -103,7 +103,7 @@ class StreamTest extends TestCase
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
 
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
         $stream->close();
 
         $this->assertSame(
@@ -119,7 +119,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
         $stream->seek(new Position(3));
 
         $this->assertSame(
@@ -137,7 +137,7 @@ class StreamTest extends TestCase
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
 
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
         $stream->seek(new Position(2));
         $stream->close();
 
@@ -155,7 +155,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $this->assertFalse($stream->end());
         \fread($resource, 10);
@@ -167,7 +167,7 @@ class StreamTest extends TestCase
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
 
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
         $stream->close();
 
         $this->assertTrue($stream->end());
@@ -177,7 +177,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $size = $stream->size()->match(
             static fn($size) => $size,
@@ -191,7 +191,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $this->assertFalse($stream->closed());
         $this->assertInstanceOf(
@@ -208,7 +208,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         \fclose($resource);
 
@@ -220,7 +220,7 @@ class StreamTest extends TestCase
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
 
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
         $stream->close();
 
         $this->assertInstanceOf(
@@ -237,7 +237,7 @@ class StreamTest extends TestCase
         $resource = \fopen('php://temp', 'r+');
         \fwrite($resource, 'foobarbaz');
 
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $this->assertInstanceOf(
             PositionNotSeekable::class,
@@ -250,14 +250,14 @@ class StreamTest extends TestCase
 
     public function testDoesntTryToRewindStdin()
     {
-        $this->assertInstanceOf(Stream::class, new Stream(\fopen('php://stdin', 'rb')));
+        $this->assertInstanceOf(Stream::class, Stream::of(\fopen('php://stdin', 'rb')));
     }
 
     public function testReturnErrorWhenTryingToSeekStdin()
     {
         $this->assertInstanceOf(
             PositionNotSeekable::class,
-            (new Stream(\fopen('php://stdin', 'rb')))
+            (Stream::of(\fopen('php://stdin', 'rb')))
                 ->seek(new Position(0))
                 ->match(
                     static fn() => null,
@@ -268,14 +268,14 @@ class StreamTest extends TestCase
 
     public function testDoesntTryToRewindStdout()
     {
-        $this->assertInstanceOf(Stream::class, new Stream(\fopen('php://stdout', 'rb')));
+        $this->assertInstanceOf(Stream::class, Stream::of(\fopen('php://stdout', 'rb')));
     }
 
     public function testReturnErrorWhenTryingToSeekStdout()
     {
         $this->assertInstanceOf(
             PositionNotSeekable::class,
-            (new Stream(\fopen('php://stdout', 'rb')))
+            (Stream::of(\fopen('php://stdout', 'rb')))
                 ->seek(new Position(0))
                 ->match(
                     static fn() => null,
@@ -286,14 +286,14 @@ class StreamTest extends TestCase
 
     public function testDoesntTryToRewindStderr()
     {
-        $this->assertInstanceOf(Stream::class, new Stream(\fopen('php://stderr', 'rb')));
+        $this->assertInstanceOf(Stream::class, Stream::of(\fopen('php://stderr', 'rb')));
     }
 
     public function testReturnErrorWhenTryingToSeekStderr()
     {
         $this->assertInstanceOf(
             PositionNotSeekable::class,
-            (new Stream(\fopen('php://stderr', 'rb')))
+            (Stream::of(\fopen('php://stderr', 'rb')))
                 ->seek(new Position(0))
                 ->match(
                     static fn() => null,
@@ -306,7 +306,7 @@ class StreamTest extends TestCase
     {
         $path = \tempnam(\sys_get_temp_dir(), 'lazy_stream');
         \file_put_contents($path, 'lorem ipsum dolor');
-        $stream = new Stream(\fopen($path, 'r'));
+        $stream = Stream::of(\fopen($path, 'r'));
 
         $this->assertInstanceOf(
             PositionNotSeekable::class,

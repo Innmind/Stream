@@ -23,7 +23,7 @@ final class NonBlocking implements Readable, Selectable
     /** @var Readable&Selectable */
     private Readable $stream;
 
-    public function __construct(Selectable $selectable)
+    private function __construct(Selectable $selectable)
     {
         $resource = $selectable->resource();
         $return = \stream_set_blocking($resource, false);
@@ -38,8 +38,13 @@ final class NonBlocking implements Readable, Selectable
         if ($selectable instanceof Readable) {
             $this->stream = $selectable;
         } else {
-            $this->stream = new Stream($resource);
+            $this->stream = Stream::of($resource);
         }
+    }
+
+    public static function of(Selectable $selectable): self
+    {
+        return new self($selectable);
     }
 
     public function resource()

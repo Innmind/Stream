@@ -31,7 +31,7 @@ class StreamTest extends TestCase
 
     public function testInterface()
     {
-        $stream = new Stream(\tmpfile());
+        $stream = Stream::of(\tmpfile());
 
         $this->assertInstanceOf(Readable::class, $stream);
         $this->assertInstanceOf(Selectable::class, $stream);
@@ -41,28 +41,28 @@ class StreamTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new Stream('foo');
+        Stream::of('foo');
     }
 
     public function testThrowWhenNotAStream()
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new Stream(\imagecreatetruecolor(42, 42));
+        Stream::of(\imagecreatetruecolor(42, 42));
     }
 
     public function testResource()
     {
         $expected = \tmpfile();
 
-        $this->assertSame($expected, (new Stream($expected))->resource());
+        $this->assertSame($expected, Stream::of($expected)->resource());
     }
 
     public function testRead()
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
         $text = $stream->read(3)->match(
             static fn($value) => $value,
             static fn() => null,
@@ -88,7 +88,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
         $stream->close();
 
         $this->assertNull($stream->read()->match(
@@ -101,7 +101,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
         $stream->seek(new Position(3));
         $text = $stream->read()->match(
             static fn($value) => $value,
@@ -116,7 +116,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, "foo\nbar\nbaz");
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
         $line = $stream->readLine()->match(
             static fn($value) => $value,
             static fn() => null,
@@ -142,7 +142,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
         $stream->close();
 
         $this->assertNull($stream->readLine()->match(
@@ -158,7 +158,7 @@ class StreamTest extends TestCase
 
         $this->assertSame(9, \ftell($resource));
 
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $this->assertInstanceOf(Position::class, $stream->position());
         $this->assertSame(0, $stream->position()->toInt());
@@ -168,7 +168,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $this->assertSame(
             $stream,
@@ -200,7 +200,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
         $stream->seek(new Position(3));
 
         $this->assertSame(
@@ -217,7 +217,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $this->assertFalse($stream->end());
         $stream->read();
@@ -228,7 +228,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $size = $stream->size()->match(
             static fn($size) => $size,
@@ -242,7 +242,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $this->assertFalse($stream->closed());
         $this->assertInstanceOf(
@@ -259,7 +259,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
 
         $this->assertSame('foobarbaz', $stream->toString()->match(
             static fn($value) => $value,
@@ -271,7 +271,7 @@ class StreamTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Stream($resource);
+        $stream = Stream::of($resource);
         $stream->close();
 
         $this->assertNull($stream->toString()->match(

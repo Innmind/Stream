@@ -28,10 +28,18 @@ final class Stream implements Readable, Selectable
     /**
      * @param resource $resource
      */
-    public function __construct($resource)
+    private function __construct($resource)
     {
-        $this->stream = new Base($resource);
+        $this->stream = Base::of($resource);
         $this->resource = $resource;
+    }
+
+    /**
+     * @param resource $resource
+     */
+    public static function of($resource): self
+    {
+        return new self($resource);
     }
 
     public static function open(Path $path): self

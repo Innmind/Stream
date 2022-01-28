@@ -5,6 +5,9 @@ namespace Innmind\Stream;
 
 use Innmind\Immutable\Str;
 
+/**
+ * @psalm-immutable
+ */
 final class DataPartiallyWritten
 {
     private string $message;

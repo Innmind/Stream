@@ -3,6 +3,9 @@ declare(strict_types = 1);
 
 namespace Innmind\Stream\Stream\Size;
 
+/**
+ * @psalm-immutable
+ */
 enum Unit
 {
     case bytes;
@@ -12,6 +15,9 @@ enum Unit
     case terabytes;
     case petabytes;
 
+    /**
+     * @psalm-pure
+     */
     public static function for(int $size): self
     {
         if ($size < 1024) {
@@ -37,6 +43,9 @@ enum Unit
         return self::petabytes;
     }
 
+    /**
+     * @psalm-pure
+     */
     public static function format(int $size): string
     {
         $unit = self::for($size);

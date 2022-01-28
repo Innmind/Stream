@@ -3,6 +3,9 @@ declare(strict_types = 1);
 
 namespace Innmind\Stream\Stream\Position;
 
+/**
+ * @psalm-immutable
+ */
 enum Mode
 {
     case fromStart;

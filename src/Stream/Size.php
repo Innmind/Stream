@@ -5,6 +5,9 @@ namespace Innmind\Stream\Stream;
 
 use Innmind\Stream\Exception\SizeCantBeNegative;
 
+/**
+ * @psalm-immutable
+ */
 final class Size
 {
     private int $value;

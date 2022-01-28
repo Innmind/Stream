@@ -23,14 +23,10 @@ final class Select implements Watch
     private Map $read;
     /** @var Map<resource, Selectable&Writable> */
     private Map $write;
-    /** @var Map<resource, Selectable> */
-    private Map $outOfBand;
     /** @var list<resource> */
     private array $readResources;
     /** @var list<resource> */
     private array $writeResources;
-    /** @var list<resource> */
-    private array $outOfBandResources;
 
     public function __construct(ElapsedPeriod $timeout)
     {
@@ -39,33 +35,27 @@ final class Select implements Watch
         $this->read = Map::of();
         /** @var Map<resource, Selectable&Writable> */
         $this->write = Map::of();
-        /** @var Map<resource, Selectable> */
-        $this->outOfBand = Map::of();
         $this->readResources = [];
         $this->writeResources = [];
-        $this->outOfBandResources = [];
     }
 
     public function __invoke(): Maybe
     {
         if (
             $this->read->empty() &&
-            $this->write->empty() &&
-            $this->outOfBand->empty()
+            $this->write->empty()
         ) {
             /** @var Set<Selectable&Readable> */
             $read = Set::of();
             /** @var Set<Selectable&Writable> */
             $write = Set::of();
-            /** @var Set<Selectable> */
-            $outOfBand = Set::of();
 
-            return Maybe::just(new Ready($read, $write, $outOfBand));
+            return Maybe::just(new Ready($read, $write));
         }
 
         $read = $this->readResources;
         $write = $this->writeResources;
-        $outOfBand = $this->outOfBandResources;
+        $outOfBand = [];
         $seconds = (int) ($this->timeout->milliseconds() / 1000);
         $microseconds = ($this->timeout->milliseconds() - ($seconds * 1000)) * 1000;
 
@@ -104,19 +94,8 @@ final class Select implements Watch
                 Set::of(),
                 static fn(Set $set, $stream): Set => ($set)($stream),
             );
-        /**
-         * @var Set<Selectable>
-         */
-        $outOfBandReady = $this
-            ->outOfBand
-            ->filter(static fn($resource) => \in_array($resource, $outOfBand ?? [], true))
-            ->values()
-            ->reduce(
-                Set::of(),
-                static fn(Set $set, $stream): Set => ($set)($stream),
-            );
 
-        return Maybe::just(new Ready($readable, $writable, $outOfBandReady));
+        return Maybe::just(new Ready($readable, $writable));
     }
 
     public function forRead(Selectable $read, Selectable ...$reads): Watch
@@ -159,35 +138,12 @@ final class Select implements Watch
         return $self;
     }
 
-    public function forOutOfBand(
-        Selectable $outOfBand,
-        Selectable ...$outOfBands,
-    ): Watch {
-        $self = clone $this;
-        $self->outOfBand = ($self->outOfBand)(
-            $outOfBand->resource(),
-            $outOfBand,
-        );
-        $self->outOfBandResources[] = $outOfBand->resource();
-
-        foreach ($outOfBands as $outOfBand) {
-            $self->outOfBand = ($self->outOfBand)(
-                $outOfBand->resource(),
-                $outOfBand,
-            );
-            $self->outOfBandResources[] = $outOfBand->resource();
-        }
-
-        return $self;
-    }
-
     public function unwatch(Selectable $stream): Watch
     {
         $resource = $stream->resource();
         $self = clone $this;
         $self->read = $self->read->remove($resource);
         $self->write = $self->write->remove($resource);
-        $self->outOfBand = $self->outOfBand->remove($resource);
         /** @var list<resource> */
         $self->readResources = \array_values(\array_filter(
             $self->readResources,
@@ -200,13 +156,6 @@ final class Select implements Watch
             $self->writeResources,
             static function($write) use ($resource): bool {
                 return $write !== $resource;
-            },
-        ));
-        /** @var list<resource> */
-        $self->outOfBandResources = \array_values(\array_filter(
-            $self->outOfBandResources,
-            static function($outOfBand) use ($resource): bool {
-                return $outOfBand !== $resource;
             },
         ));
 

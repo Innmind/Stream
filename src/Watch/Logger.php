@@ -52,19 +52,6 @@ final class Logger implements Watch
         );
     }
 
-    public function forOutOfBand(Selectable $outOfBand, Selectable ...$outOfBands): Watch
-    {
-        $this->logger->info(
-            'Adding {count} streams to watch for out of band',
-            ['count' => \count($outOfBands) + 1],
-        );
-
-        return new self(
-            $this->watch->forOutOfBand($outOfBand, ...$outOfBands),
-            $this->logger,
-        );
-    }
-
     public function unwatch(Selectable $stream): Watch
     {
         $this->logger->info('Removing a stream from watch list');
@@ -78,11 +65,10 @@ final class Logger implements Watch
     private function log(Ready $ready): Ready
     {
         $this->logger->info(
-            'Streams ready: {read} for read, {write} for write, {oob} for out of band',
+            'Streams ready: {read} for read, {write} for write',
             [
                 'read' => $ready->toRead()->size(),
                 'write' => $ready->toWrite()->size(),
-                'oob' => $ready->toOutOfBand()->size(),
             ],
         );
 

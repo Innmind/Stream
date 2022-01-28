@@ -16,19 +16,15 @@ final class Ready
     private Set $read;
     /** @var Set<Selectable&Writable> */
     private Set $write;
-    /** @var Set<Selectable> */
-    private Set $outOfBand;
 
     /**
      * @param Set<Selectable&Readable> $read
      * @param Set<Selectable&Writable> $write
-     * @param Set<Selectable> $outOfBand
      */
-    public function __construct(Set $read, Set $write, Set $outOfBand)
+    public function __construct(Set $read, Set $write)
     {
         $this->read = $read;
         $this->write = $write;
-        $this->outOfBand = $outOfBand;
     }
 
     /**
@@ -45,13 +41,5 @@ final class Ready
     public function toWrite(): Set
     {
         return $this->write;
-    }
-
-    /**
-     * @return Set<Selectable>
-     */
-    public function toOutOfBand(): Set
-    {
-        return $this->outOfBand;
     }
 }

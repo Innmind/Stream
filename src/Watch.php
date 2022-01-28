@@ -24,6 +24,5 @@ interface Watch
      * @param Selectable&Writable $writes
      */
     public function forWrite(Selectable $write, Selectable ...$writes): self;
-    public function forOutOfBand(Selectable $outOfBand, Selectable ...$outOfBands): self;
     public function unwatch(Selectable $stream): self;
 }

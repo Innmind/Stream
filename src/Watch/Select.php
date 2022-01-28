@@ -103,6 +103,9 @@ final class Select implements Watch
         return new self($timeout);
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function forRead(Selectable $read, Selectable ...$reads): Watch
     {
         $self = clone $this;
@@ -123,6 +126,9 @@ final class Select implements Watch
         return $self;
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function forWrite(Selectable $write, Selectable ...$writes): Watch
     {
         $self = clone $this;
@@ -143,6 +149,9 @@ final class Select implements Watch
         return $self;
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function unwatch(Selectable $stream): Watch
     {
         $resource = $stream->resource();

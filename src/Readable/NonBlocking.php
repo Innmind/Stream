@@ -47,6 +47,9 @@ final class NonBlocking implements Readable, Selectable
         return new self($selectable);
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function resource()
     {
         return $this->stream->resource();

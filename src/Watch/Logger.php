@@ -26,8 +26,12 @@ final class Logger implements Watch
         return ($this->watch)()->map(fn($ready) => $this->log($ready));
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function forRead(Selectable $read, Selectable ...$reads): Watch
     {
+        /** @psalm-suppress ImpureMethodCall */
         $this->logger->info(
             'Adding {count} streams to watch for read',
             ['count' => \count($reads) + 1],
@@ -39,8 +43,12 @@ final class Logger implements Watch
         );
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function forWrite(Selectable $write, Selectable ...$writes): Watch
     {
+        /** @psalm-suppress ImpureMethodCall */
         $this->logger->info(
             'Adding {count} streams to watch for write',
             ['count' => \count($writes) + 1],
@@ -52,8 +60,12 @@ final class Logger implements Watch
         );
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function unwatch(Selectable $stream): Watch
     {
+        /** @psalm-suppress ImpureMethodCall */
         $this->logger->info('Removing a stream from watch list');
 
         return new self(

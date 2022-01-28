@@ -14,15 +14,23 @@ interface Watch
     public function __invoke(): Maybe;
 
     /**
+     * @psalm-mutation-free
+     *
      * @param Selectable&Readable $read
      * @param Selectable&Readable $reads
      */
     public function forRead(Selectable $read, Selectable ...$reads): self;
 
     /**
+     * @psalm-mutation-free
+     *
      * @param Selectable&Writable $write
      * @param Selectable&Writable $writes
      */
     public function forWrite(Selectable $write, Selectable ...$writes): self;
+
+    /**
+     * @psalm-mutation-free
+     */
     public function unwatch(Selectable $stream): self;
 }

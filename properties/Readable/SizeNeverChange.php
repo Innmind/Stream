@@ -24,10 +24,6 @@ final class SizeNeverChange implements Property
     public function ensureHeldBy(object $stream): object
     {
         Assert::assertSame(
-            $stream->size(),
-            $stream->size(),
-        );
-        Assert::assertSame(
             $stream->size()->match(
                 static fn($size) => $size->toInt(),
                 static fn() => null,

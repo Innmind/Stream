@@ -22,9 +22,6 @@ final class Stream implements StreamInterface
 {
     /** @var resource */
     private $resource;
-
-    /** @var Maybe<Size> */
-    private Maybe $size;
     private bool $closed = false;
     private bool $seekable = false;
 
@@ -42,15 +39,6 @@ final class Stream implements StreamInterface
         }
 
         $this->resource = $resource;
-        /** @var Maybe<Size> */
-        $this->size = Maybe::nothing();
-
-        $stats = \fstat($resource);
-
-        if (isset($stats['size'])) {
-            $this->size = Maybe::just(new Size((int) $stats['size']));
-        }
-
         $meta = \stream_get_meta_data($resource);
 
         if ($meta['seekable'] && \substr($meta['uri'], 0, 9) !== 'php://std') {
@@ -111,7 +99,17 @@ final class Stream implements StreamInterface
 
     public function size(): Maybe
     {
-        return $this->size;
+        if ($this->closed()) {
+            /** @var Maybe<Size> */
+            return Maybe::nothing();
+        }
+
+        /** @psalm-suppress InvalidArgument Psalm doesn't understand the filter */
+        return Maybe::of(\fstat($this->resource))
+            ->filter(static fn($stats) => \is_array($stats))
+            ->flatMap(static fn(array $stats) => Maybe::of($stats['size'] ?? null))
+            ->map(static fn($size) => (int) $size)
+            ->map(static fn(int $size) => new Size($size));
     }
 
     public function close(): Either

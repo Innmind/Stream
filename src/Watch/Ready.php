@@ -10,6 +10,9 @@ use Innmind\Stream\{
 };
 use Innmind\Immutable\Set;
 
+/**
+ * @psalm-immutable
+ */
 final class Ready
 {
     /** @var Set<Selectable&Readable> */

@@ -41,13 +41,13 @@ class SelectTest extends TestCase
     {
         $this->assertInstanceOf(
             Watch::class,
-            new Select(new ElapsedPeriod(0)),
+            Select::timeoutAfter(new ElapsedPeriod(0)),
         );
     }
 
     public function testForRead()
     {
-        $select = new Select(new ElapsedPeriod(0));
+        $select = Select::timeoutAfter(new ElapsedPeriod(0));
         $resource = \fopen('php://temp', 'w');
         $stream = $this->createMock(Selectable::class);
         $stream
@@ -63,7 +63,7 @@ class SelectTest extends TestCase
 
     public function testForWrite()
     {
-        $select = new Select(new ElapsedPeriod(0));
+        $select = Select::timeoutAfter(new ElapsedPeriod(0));
         $resource = \fopen('php://temp', 'w');
         $stream = $this->createMock(Selectable::class);
         $stream
@@ -79,7 +79,7 @@ class SelectTest extends TestCase
 
     public function testInvokeWhenNoStream()
     {
-        $ready = (new Select(new ElapsedPeriod(0)))()->match(
+        $ready = Select::timeoutAfter(new ElapsedPeriod(0))()->match(
             static fn($ready) => $ready,
             static fn() => null,
         );
@@ -101,7 +101,7 @@ class SelectTest extends TestCase
             ->expects($this->exactly(2))
             ->method('resource')
             ->willReturn($writeSocket = \stream_socket_client('unix:///tmp/write.sock'));
-        $select = (new Select(new ElapsedPeriod(0)))
+        $select = Select::timeoutAfter(new ElapsedPeriod(0))
             ->forRead($read)
             ->forWrite($write);
         \fwrite($readSocket, 'foo');
@@ -145,7 +145,7 @@ class SelectTest extends TestCase
             ->expects($this->exactly(3))
             ->method('resource')
             ->willReturn($writeSocket = \stream_socket_client('unix:///tmp/write.sock'));
-        $select = (new Select(new ElapsedPeriod(0)))
+        $select = Select::timeoutAfter(new ElapsedPeriod(0))
             ->forRead($read)
             ->forWrite($write);
         \fwrite($readSocket, 'foo');

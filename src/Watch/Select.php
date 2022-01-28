@@ -28,7 +28,7 @@ final class Select implements Watch
     /** @var list<resource> */
     private array $writeResources;
 
-    public function __construct(ElapsedPeriod $timeout)
+    private function __construct(ElapsedPeriod $timeout)
     {
         $this->timeout = $timeout;
         /** @var Map<resource, Selectable&Readable> */
@@ -96,6 +96,11 @@ final class Select implements Watch
             );
 
         return Maybe::just(new Ready($readable, $writable));
+    }
+
+    public static function timeoutAfter(ElapsedPeriod $timeout): self
+    {
+        return new self($timeout);
     }
 
     public function forRead(Selectable $read, Selectable ...$reads): Watch

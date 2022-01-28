@@ -60,7 +60,7 @@ class LoggerTest extends TestCase
                 $logger = $this->createMock(LoggerInterface::class);
                 $logger
                     ->expects($this->once())
-                    ->method('info')
+                    ->method('debug')
                     ->with(
                         'Streams ready: {read} for read, {write} for write',
                         [
@@ -102,7 +102,7 @@ class LoggerTest extends TestCase
                 $logger = $this->createMock(LoggerInterface::class);
                 $logger
                     ->expects($this->exactly(2))
-                    ->method('info')
+                    ->method('debug')
                     ->withConsecutive(
                         [
                             'Adding {count} streams to watch for read',
@@ -147,7 +147,7 @@ class LoggerTest extends TestCase
                 $logger = $this->createMock(LoggerInterface::class);
                 $logger
                     ->expects($this->exactly(2))
-                    ->method('info')
+                    ->method('debug')
                     ->withConsecutive(
                         [
                             'Adding {count} streams to watch for write',
@@ -186,7 +186,7 @@ class LoggerTest extends TestCase
         $logger = $this->createMock(LoggerInterface::class);
         $logger
             ->expects($this->exactly(2))
-            ->method('info')
+            ->method('debug')
             ->withConsecutive(
                 ['Removing a stream from watch list'],
                 ['Streams ready: {read} for read, {write} for write'],

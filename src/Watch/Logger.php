@@ -37,7 +37,7 @@ final class Logger implements Watch
     public function forRead(Selectable $read, Selectable ...$reads): Watch
     {
         /** @psalm-suppress ImpureMethodCall */
-        $this->logger->info(
+        $this->logger->debug(
             'Adding {count} streams to watch for read',
             ['count' => \count($reads) + 1],
         );
@@ -54,7 +54,7 @@ final class Logger implements Watch
     public function forWrite(Selectable $write, Selectable ...$writes): Watch
     {
         /** @psalm-suppress ImpureMethodCall */
-        $this->logger->info(
+        $this->logger->debug(
             'Adding {count} streams to watch for write',
             ['count' => \count($writes) + 1],
         );
@@ -71,7 +71,7 @@ final class Logger implements Watch
     public function unwatch(Selectable $stream): Watch
     {
         /** @psalm-suppress ImpureMethodCall */
-        $this->logger->info('Removing a stream from watch list');
+        $this->logger->debug('Removing a stream from watch list');
 
         return new self(
             $this->watch->unwatch($stream),
@@ -81,7 +81,7 @@ final class Logger implements Watch
 
     private function log(Ready $ready): Ready
     {
-        $this->logger->info(
+        $this->logger->debug(
             'Streams ready: {read} for read, {write} for write',
             [
                 'read' => $ready->toRead()->size(),

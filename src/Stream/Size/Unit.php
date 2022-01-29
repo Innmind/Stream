@@ -60,6 +60,14 @@ enum Unit
         };
     }
 
+    public function times(int $value): int
+    {
+        return match ($this) {
+            self::bytes => $value,
+            default => $value * $this->lowerBound(),
+        };
+    }
+
     private function lowerBound(): int
     {
         return match ($this) {

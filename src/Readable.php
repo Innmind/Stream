@@ -11,7 +11,7 @@ use Innmind\Immutable\{
 interface Readable extends Stream
 {
     /**
-     * @param int $length When omitted will read the remaining of the stream
+     * @param positive-int|null $length When omitted will read the remaining of the stream
      *
      * @return Maybe<Str>
      */

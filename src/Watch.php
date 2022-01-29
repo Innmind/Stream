@@ -9,7 +9,7 @@ use Innmind\Immutable\Maybe;
 interface Watch
 {
     /**
-     * @return Maybe<Ready> Returns nothing when it fails to loojup the streams
+     * @return Maybe<Ready> Returns nothing when it fails to lookup the streams
      */
     public function __invoke(): Maybe;
 

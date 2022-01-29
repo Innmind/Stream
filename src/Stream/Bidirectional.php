@@ -11,7 +11,12 @@ use Innmind\Stream\{
     Stream as StreamInterface,
     Stream\Position\Mode,
 };
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+    Either,
+    SideEffect,
+};
 
 final class Bidirectional implements BidirectionalInterface, Selectable
 {
@@ -23,13 +28,21 @@ final class Bidirectional implements BidirectionalInterface, Selectable
     /**
      * @param resource $resource
      */
-    public function __construct($resource)
+    private function __construct($resource)
     {
-        $this->read = new Readable\NonBlocking(
-            new Readable\Stream($resource),
+        $this->read = Readable\NonBlocking::of(
+            Readable\Stream::of($resource),
         );
-        $this->write = new Writable\Stream($resource);
+        $this->write = Writable\Stream::of($resource);
         $this->resource = $resource;
+    }
+
+    /**
+     * @param resource $resource
+     */
+    public static function of($resource): self
+    {
+        return new self($resource);
     }
 
     public function resource()
@@ -37,11 +50,14 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->resource;
     }
 
-    public function close(): void
+    public function close(): Either
     {
-        $this->write->close();
+        return $this->write->close();
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function closed(): bool
     {
         return $this->write->closed();
@@ -52,14 +68,18 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->read->position();
     }
 
-    public function seek(Position $position, Mode $mode = null): void
+    /** @psalm-suppress InvalidReturnType */
+    public function seek(Position $position, Mode $mode = null): Either
     {
-        $this->read->seek($position, $mode);
+        /** @psalm-suppress InvalidReturnStatement */
+        return $this->read->seek($position, $mode)->map(fn() => $this);
     }
 
-    public function rewind(): void
+    /** @psalm-suppress InvalidReturnType */
+    public function rewind(): Either
     {
-        $this->read->rewind();
+        /** @psalm-suppress InvalidReturnStatement */
+        return $this->read->rewind()->map(fn() => $this);
     }
 
     public function end(): bool
@@ -67,32 +87,32 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->read->end();
     }
 
-    public function size(): Size
+    /**
+     * @psalm-mutation-free
+     */
+    public function size(): Maybe
     {
         return $this->read->size();
     }
 
-    public function knowsSize(): bool
-    {
-        return $this->read->knowsSize();
-    }
-
-    public function read(int $length = null): Str
+    public function read(int $length = null): Maybe
     {
         return $this->read->read($length);
     }
 
-    public function readLine(): Str
+    public function readLine(): Maybe
     {
         return $this->read->readLine();
     }
 
-    public function write(Str $data): void
+    /** @psalm-suppress InvalidReturnType */
+    public function write(Str $data): Either
     {
-        $this->write->write($data);
+        /** @psalm-suppress InvalidReturnStatement */
+        return $this->write->write($data)->map(fn() => $this);
     }
 
-    public function toString(): string
+    public function toString(): Maybe
     {
         return $this->read->toString();
     }

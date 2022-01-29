@@ -9,7 +9,10 @@ use Innmind\Stream\{
     Watch,
     Selectable,
 };
-use Innmind\Immutable\Set as ISet;
+use Innmind\Immutable\{
+    Set as ISet,
+    Maybe,
+};
 use Psr\Log\LoggerInterface;
 use PHPUnit\Framework\TestCase;
 use Innmind\BlackBox\{
@@ -25,7 +28,7 @@ class LoggerTest extends TestCase
     {
         $this->assertInstanceOf(
             Watch::class,
-            new Logger(
+            Logger::psr(
                 $this->createMock(Watch::class),
                 $this->createMock(LoggerInterface::class),
             ),
@@ -44,33 +47,33 @@ class LoggerTest extends TestCase
             ->forAll(
                 Set\Sequence::of($streams),
                 Set\Sequence::of($streams),
-                Set\Sequence::of($streams),
             )
-            ->then(function($read, $write, $outOfBand) {
+            ->then(function($read, $write) {
                 $inner = $this->createMock(Watch::class);
                 $inner
                     ->expects($this->once())
                     ->method('__invoke')
-                    ->willReturn($expected = new Ready(
-                        ISet::of(Selectable::class, ...$read),
-                        ISet::of(Selectable::class, ...$write),
-                        ISet::of(Selectable::class, ...$outOfBand),
-                    ));
+                    ->willReturn(Maybe::just($expected = new Ready(
+                        ISet::of(...$read),
+                        ISet::of(...$write),
+                    )));
                 $logger = $this->createMock(LoggerInterface::class);
                 $logger
                     ->expects($this->once())
-                    ->method('info')
+                    ->method('debug')
                     ->with(
-                        'Streams ready: {read} for read, {write} for write, {oob} for out of band',
+                        'Streams ready: {read} for read, {write} for write',
                         [
                             'read' => \count($read),
                             'write' => \count($write),
-                            'oob' => \count($outOfBand),
                         ],
                     );
-                $watch = new Logger($inner, $logger);
+                $watch = Logger::psr($inner, $logger);
 
-                $this->assertSame($expected, $watch());
+                $this->assertSame($expected, $watch()->match(
+                    static fn($ready) => $ready,
+                    static fn() => null,
+                ));
             });
     }
 
@@ -91,28 +94,31 @@ class LoggerTest extends TestCase
                 $inner2
                     ->expects($this->once())
                     ->method('__invoke')
-                    ->willReturn($expected = new Ready(
-                        ISet::of(Selectable::class),
-                        ISet::of(Selectable::class),
-                        ISet::of(Selectable::class),
-                    ));
+                    ->willReturn(Maybe::just($expected = new Ready(
+                        ISet::of(),
+                        ISet::of(),
+                        ISet::of(),
+                    )));
                 $logger = $this->createMock(LoggerInterface::class);
                 $logger
                     ->expects($this->exactly(2))
-                    ->method('info')
+                    ->method('debug')
                     ->withConsecutive(
                         [
                             'Adding {count} streams to watch for read',
                             ['count' => \count($streams)],
                         ],
-                        ['Streams ready: {read} for read, {write} for write, {oob} for out of band'],
+                        ['Streams ready: {read} for read, {write} for write'],
                     );
-                $watch = new Logger($inner, $logger);
+                $watch = Logger::psr($inner, $logger);
                 $watch2 = $watch->forRead(...$streams);
 
                 $this->assertInstanceOf(Logger::class, $watch2);
                 $this->assertNotSame($watch, $watch2);
-                $this->assertSame($expected, $watch2());
+                $this->assertSame($expected, $watch2()->match(
+                    static fn($ready) => $ready,
+                    static fn() => null,
+                ));
             });
     }
 
@@ -133,70 +139,31 @@ class LoggerTest extends TestCase
                 $inner2
                     ->expects($this->once())
                     ->method('__invoke')
-                    ->willReturn($expected = new Ready(
-                        ISet::of(Selectable::class),
-                        ISet::of(Selectable::class),
-                        ISet::of(Selectable::class),
-                    ));
+                    ->willReturn(Maybe::just($expected = new Ready(
+                        ISet::of(),
+                        ISet::of(),
+                        ISet::of(),
+                    )));
                 $logger = $this->createMock(LoggerInterface::class);
                 $logger
                     ->expects($this->exactly(2))
-                    ->method('info')
+                    ->method('debug')
                     ->withConsecutive(
                         [
                             'Adding {count} streams to watch for write',
                             ['count' => \count($streams)],
                         ],
-                        ['Streams ready: {read} for read, {write} for write, {oob} for out of band'],
+                        ['Streams ready: {read} for read, {write} for write'],
                     );
-                $watch = new Logger($inner, $logger);
+                $watch = Logger::psr($inner, $logger);
                 $watch2 = $watch->forWrite(...$streams);
 
                 $this->assertInstanceOf(Logger::class, $watch2);
                 $this->assertNotSame($watch, $watch2);
-                $this->assertSame($expected, $watch2());
-            });
-    }
-
-    public function testForOutOfBand()
-    {
-        $this
-            ->forAll(Set\Sequence::of(
-                Set\Elements::of($this->createMock(Selectable::class)),
-                Set\Integers::between(1, 10),
-            ))
-            ->then(function($streams) {
-                $inner = $this->createMock(Watch::class);
-                $inner
-                    ->expects($this->once())
-                    ->method('forOutOfBand')
-                    ->with(...$streams)
-                    ->willReturn($inner2 = $this->createMock(Watch::class));
-                $inner2
-                    ->expects($this->once())
-                    ->method('__invoke')
-                    ->willReturn($expected = new Ready(
-                        ISet::of(Selectable::class),
-                        ISet::of(Selectable::class),
-                        ISet::of(Selectable::class),
-                    ));
-                $logger = $this->createMock(LoggerInterface::class);
-                $logger
-                    ->expects($this->exactly(2))
-                    ->method('info')
-                    ->withConsecutive(
-                        [
-                            'Adding {count} streams to watch for out of band',
-                            ['count' => \count($streams)],
-                        ],
-                        ['Streams ready: {read} for read, {write} for write, {oob} for out of band'],
-                    );
-                $watch = new Logger($inner, $logger);
-                $watch2 = $watch->forOutOfBand(...$streams);
-
-                $this->assertInstanceOf(Logger::class, $watch2);
-                $this->assertNotSame($watch, $watch2);
-                $this->assertSame($expected, $watch2());
+                $this->assertSame($expected, $watch2()->match(
+                    static fn($ready) => $ready,
+                    static fn() => null,
+                ));
             });
     }
 
@@ -212,24 +179,26 @@ class LoggerTest extends TestCase
         $inner2
             ->expects($this->once())
             ->method('__invoke')
-            ->willReturn($expected = new Ready(
-                ISet::of(Selectable::class),
-                ISet::of(Selectable::class),
-                ISet::of(Selectable::class),
-            ));
+            ->willReturn(Maybe::just($expected = new Ready(
+                ISet::of(),
+                ISet::of(),
+            )));
         $logger = $this->createMock(LoggerInterface::class);
         $logger
             ->expects($this->exactly(2))
-            ->method('info')
+            ->method('debug')
             ->withConsecutive(
                 ['Removing a stream from watch list'],
-                ['Streams ready: {read} for read, {write} for write, {oob} for out of band'],
+                ['Streams ready: {read} for read, {write} for write'],
             );
-        $watch = new Logger($inner, $logger);
+        $watch = Logger::psr($inner, $logger);
         $watch2 = $watch->unwatch($stream);
 
         $this->assertInstanceOf(Logger::class, $watch2);
         $this->assertNotSame($watch, $watch2);
-        $this->assertSame($expected, $watch2());
+        $this->assertSame($expected, $watch2()->match(
+            static fn($ready) => $ready,
+            static fn() => null,
+        ));
     }
 }

@@ -3,20 +3,48 @@ declare(strict_types = 1);
 
 namespace Innmind\Stream;
 
-use Innmind\Stream\Stream\{
-    Position,
-    Size,
-    Position\Mode
+use Innmind\Stream\{
+    Stream\Position,
+    Stream\Size,
+    Stream\Position\Mode,
+};
+use Innmind\Immutable\{
+    Maybe,
+    Either,
+    SideEffect,
 };
 
 interface Stream
 {
-    public function close(): void;
+    /**
+     * It returns a SideEffect instead of the stream on the right hand size
+     * because you should no longer use the stream once it's closed
+     *
+     * @return Either<FailedToCloseStream, SideEffect>
+     */
+    public function close(): Either;
+
+    /**
+     * @psalm-mutation-free
+     */
     public function closed(): bool;
     public function position(): Position;
-    public function seek(Position $position, Mode $mode = null): void;
-    public function rewind(): void;
+
+    /**
+     * @return Either<PositionNotSeekable, self>
+     */
+    public function seek(Position $position, Mode $mode = null): Either;
+
+    /**
+     * @return Either<PositionNotSeekable, self>
+     */
+    public function rewind(): Either;
     public function end(): bool;
-    public function size(): Size;
-    public function knowsSize(): bool;
+
+    /**
+     * @psalm-mutation-free
+     *
+     * @return Maybe<Size>
+     */
+    public function size(): Maybe;
 }

@@ -13,7 +13,11 @@ use Innmind\Stream\{
     Stream\Position\Mode
 };
 use Innmind\Url\Path;
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+    Either,
+};
 
 final class Stream implements Readable, Selectable
 {
@@ -24,10 +28,18 @@ final class Stream implements Readable, Selectable
     /**
      * @param resource $resource
      */
-    public function __construct($resource)
+    private function __construct($resource)
     {
-        $this->stream = new Base($resource);
+        $this->stream = Base::of($resource);
         $this->resource = $resource;
+    }
+
+    /**
+     * @param resource $resource
+     */
+    public static function of($resource): self
+    {
+        return new self($resource);
     }
 
     public static function open(Path $path): self
@@ -48,25 +60,31 @@ final class Stream implements Readable, Selectable
         return $this->resource;
     }
 
-    public function read(int $length = null): Str
+    public function read(int $length = null): Maybe
     {
         if ($this->closed()) {
-            return Str::of('');
+            /** @var Maybe<Str> */
+            return Maybe::nothing();
         }
 
-        return Str::of((string) \stream_get_contents(
+        $data = \stream_get_contents(
             $this->resource,
             $length ?? -1,
-        ));
+        );
+
+        return Maybe::of(\is_string($data) ? Str::of($data) : null);
     }
 
-    public function readLine(): Str
+    public function readLine(): Maybe
     {
         if ($this->closed()) {
-            return Str::of('');
+            /** @var Maybe<Str> */
+            return Maybe::nothing();
         }
 
-        return Str::of((string) \fgets($this->resource));
+        $line = \fgets($this->resource);
+
+        return Maybe::of(\is_string($line) ? Str::of($line) : null);
     }
 
     public function position(): Position
@@ -74,14 +92,18 @@ final class Stream implements Readable, Selectable
         return $this->stream->position();
     }
 
-    public function seek(Position $position, Mode $mode = null): void
+    /** @psalm-suppress InvalidReturnType */
+    public function seek(Position $position, Mode $mode = null): Either
     {
-        $this->stream->seek($position, $mode);
+        /** @psalm-suppress InvalidReturnStatement */
+        return $this->stream->seek($position, $mode)->map(fn() => $this);
     }
 
-    public function rewind(): void
+    /** @psalm-suppress InvalidReturnType */
+    public function rewind(): Either
     {
-        $this->stream->rewind();
+        /** @psalm-suppress InvalidReturnStatement */
+        return $this->stream->rewind()->map(fn() => $this);
     }
 
     public function end(): bool
@@ -89,30 +111,37 @@ final class Stream implements Readable, Selectable
         return $this->stream->end();
     }
 
-    public function size(): Size
+    /**
+     * @psalm-mutation-free
+     */
+    public function size(): Maybe
     {
         return $this->stream->size();
     }
 
-    public function knowsSize(): bool
+    public function close(): Either
     {
-        return $this->stream->knowsSize();
+        return $this->stream->close();
     }
 
-    public function close(): void
-    {
-        $this->stream->close();
-    }
-
+    /**
+     * @psalm-mutation-free
+     */
     public function closed(): bool
     {
         return $this->stream->closed();
     }
 
-    public function toString(): string
+    public function toString(): Maybe
     {
-        $this->rewind();
+        /** @var Maybe<Str> */
+        $data = $this
+            ->rewind()
+            ->match(
+                fn() => $this->read(),
+                static fn() => Maybe::nothing(),
+            );
 
-        return $this->read()->toString();
+        return $data->map(static fn($data) => $data->toString());
     }
 }

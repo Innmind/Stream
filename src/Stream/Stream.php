@@ -8,24 +8,27 @@ use Innmind\Stream\{
     Stream\Size,
     Stream\Position,
     Stream\Position\Mode,
+    FailedToCloseStream,
+    PositionNotSeekable,
     Exception\InvalidArgumentException,
-    Exception\UnknownSize,
-    Exception\FailedToCloseStream,
-    Exception\PositionNotSeekable,
+};
+use Innmind\Immutable\{
+    Maybe,
+    Either,
+    SideEffect,
 };
 
 final class Stream implements StreamInterface
 {
     /** @var resource */
     private $resource;
-    private ?Size $size = null;
     private bool $closed = false;
     private bool $seekable = false;
 
     /**
      * @param resource $resource
      */
-    public function __construct($resource)
+    private function __construct($resource)
     {
         /**
          * @psalm-suppress DocblockTypeContradiction
@@ -43,12 +46,14 @@ final class Stream implements StreamInterface
             $this->seekable = true;
             $this->rewind();
         }
+    }
 
-        $stats = \fstat($resource);
-
-        if (isset($stats['size'])) {
-            $this->size = new Size((int) $stats['size']);
-        }
+    /**
+     * @param resource $resource
+     */
+    public static function of($resource): self
+    {
+        return new self($resource);
     }
 
     public function position(): Position
@@ -60,41 +65,35 @@ final class Stream implements StreamInterface
         return new Position(\ftell($this->resource));
     }
 
-    public function seek(Position $position, Mode $mode = null): void
+    public function seek(Position $position, Mode $mode = null): Either
     {
         if (!$this->seekable) {
-            throw new PositionNotSeekable;
+            /** @var Either<PositionNotSeekable, StreamInterface> */
+            return Either::left(new PositionNotSeekable);
         }
 
         if ($this->closed()) {
-            return;
+            /** @var Either<PositionNotSeekable, StreamInterface> */
+            return Either::right($this);
         }
 
         $previous = $this->position();
-        $mode ??= Mode::fromStart();
+        $mode ??= Mode::fromStart;
 
-        $this->assertSeekable($position, $mode);
-
-        $status = \fseek(
-            $this->resource,
-            $position->toInt(),
-            $mode->toInt(),
-        );
-
-        if ($status === -1) {
-            \fseek(
-                $this->resource,
-                $previous->toInt(),
-                Mode::fromStart()->toInt(),
-            );
-
-            throw new PositionNotSeekable;
-        }
+        /** @var Either<PositionNotSeekable, StreamInterface> */
+        return $this
+            ->seekable($position, $mode)
+            ->flatMap(fn($stream) => $this->doSeek(
+                $stream,
+                $position,
+                $mode,
+                $previous,
+            ));
     }
 
-    public function rewind(): void
+    public function rewind(): Either
     {
-        $this->seek(new Position(0));
+        return $this->seek(new Position(0));
     }
 
     public function end(): bool
@@ -106,36 +105,45 @@ final class Stream implements StreamInterface
         return \feof($this->resource);
     }
 
-    public function size(): Size
-    {
-        if (!$this->size instanceof Size) {
-            throw new UnknownSize;
-        }
-
-        return $this->size;
-    }
-
-    public function knowsSize(): bool
-    {
-        return $this->size instanceof Size;
-    }
-
-    public function close(): void
+    /**
+     * @psalm-mutation-free
+     */
+    public function size(): Maybe
     {
         if ($this->closed()) {
-            return;
+            /** @var Maybe<Size> */
+            return Maybe::nothing();
+        }
+
+        /** @psalm-suppress InvalidArgument Psalm doesn't understand the filter */
+        return Maybe::of(\fstat($this->resource))
+            ->filter(static fn($stats) => \is_array($stats))
+            ->flatMap(static fn(array $stats) => Maybe::of($stats['size'] ?? null))
+            ->map(static fn($size) => (int) $size)
+            ->map(static fn(int $size) => new Size($size));
+    }
+
+    public function close(): Either
+    {
+        if ($this->closed()) {
+            return Either::right(new SideEffect);
         }
 
         /** @psalm-suppress InvalidPropertyAssignmentValue */
         $return = \fclose($this->resource);
 
         if ($return === false) {
-            throw new FailedToCloseStream;
+            return Either::left(new FailedToCloseStream);
         }
 
         $this->closed = true;
+
+        return Either::right(new SideEffect);
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function closed(): bool
     {
         /** @psalm-suppress DocblockTypeContradiction */
@@ -143,26 +151,52 @@ final class Stream implements StreamInterface
     }
 
     /**
-     * @throws PositionNotSeekable
+     * @return Either<PositionNotSeekable, self>
      */
-    private function assertSeekable(Position $position, Mode $mode): void
+    private function seekable(Position $position, Mode $mode): Either
     {
-        if (!$this->knowsSize()) {
-            return;
+        $targetPosition = match ($mode) {
+            Mode::fromStart => $position->toInt(),
+            Mode::fromCurrentPosition => $this->position()->toInt() + $position->toInt(),
+        };
+
+        return $this
+            ->size()
+            ->filter(static fn($size) => $targetPosition <= $size->toInt())
+            ->match(
+                fn() => Either::right($this),
+                static fn() => Either::left(new PositionNotSeekable),
+            );
+    }
+
+    /**
+     * @return Either<PositionNotSeekable, self>
+     */
+    private function doSeek(
+        self $stream,
+        Position $position,
+        Mode $mode,
+        Position $previous,
+    ): Either {
+        $status = \fseek(
+            $stream->resource,
+            $position->toInt(),
+            $mode->toInt(),
+        );
+
+        if ($status === -1) {
+            /** @psalm-suppress ImpureMethodCall */
+            \fseek(
+                $stream->resource,
+                $previous->toInt(),
+                Mode::fromStart->toInt(),
+            );
+
+            /** @var Either<PositionNotSeekable, self> */
+            return Either::left(new PositionNotSeekable);
         }
 
-        switch ($mode) {
-            case Mode::fromCurrentPosition():
-                $targetPosition = $this->position()->toInt() + $position->toInt();
-                break;
-
-            default: // fromStart
-                $targetPosition = $position->toInt();
-                break;
-        }
-
-        if ($targetPosition > $this->size()->toInt()) {
-            throw new PositionNotSeekable;
-        }
+        /** @var Either<PositionNotSeekable, self> */
+        return Either::right($stream);
     }
 }

@@ -30,6 +30,16 @@ class SizeTest extends TestCase
         new Size(-1);
     }
 
+    public function testSizeUnitLimitShortcut()
+    {
+        $this->assertSame(5, Size\Unit::bytes->times(5));
+        $this->assertSame(5_120, Size\Unit::kilobytes->times(5));
+        $this->assertSame(5_242_880, Size\Unit::megabytes->times(5));
+        $this->assertSame(5_368_709_120, Size\Unit::gigabytes->times(5));
+        $this->assertSame(5_497_558_138_880, Size\Unit::terabytes->times(5));
+        $this->assertSame(5_629_499_534_213_120, Size\Unit::petabytes->times(5));
+    }
+
     public function cases(): array
     {
         return [

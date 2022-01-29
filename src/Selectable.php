@@ -6,6 +6,8 @@ namespace Innmind\Stream;
 interface Selectable extends Stream
 {
     /**
+     * @psalm-mutation-free
+     *
      * @return resource stream
      */
     public function resource();

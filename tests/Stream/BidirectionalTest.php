@@ -13,18 +13,21 @@ use Innmind\Stream\{
     Stream\Position,
     Stream\Position\Mode,
     Stream\Size,
-    Exception\DataPartiallyWritten,
-    Exception\FailedToWriteToStream,
+    DataPartiallyWritten,
+    FailedToWriteToStream,
     Exception\InvalidArgumentException
 };
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    SideEffect,
+};
 use PHPUnit\Framework\TestCase;
 
 class BidirectionalTest extends TestCase
 {
     public function testInterface()
     {
-        $stream = new Bidirectional(\tmpfile());
+        $stream = Bidirectional::of(\tmpfile());
 
         $this->assertInstanceOf(Readable::class, $stream);
         $this->assertInstanceOf(Writable::class, $stream);
@@ -36,14 +39,14 @@ class BidirectionalTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new Bidirectional('foo');
+        Bidirectional::of('foo');
     }
 
     public function testThrowWhenNotAStream()
     {
         $this->expectException(InvalidArgumentException::class);
 
-        new Bidirectional(\imagecreatetruecolor(42, 42));
+        Bidirectional::of(\imagecreatetruecolor(42, 42));
     }
 
     public function testPosition()
@@ -53,7 +56,7 @@ class BidirectionalTest extends TestCase
 
         $this->assertSame(9, \ftell($resource));
 
-        $stream = new Bidirectional($resource);
+        $stream = Bidirectional::of($resource);
 
         $this->assertInstanceOf(Position::class, $stream->position());
         $this->assertSame(0, $stream->position()->toInt());
@@ -63,13 +66,31 @@ class BidirectionalTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Bidirectional($resource);
+        $stream = Bidirectional::of($resource);
 
-        $this->assertNull($stream->seek(new Position(3)));
+        $this->assertSame(
+            $stream,
+            $stream->seek(new Position(3))->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(3, $stream->position()->toInt());
-        $this->assertNull($stream->seek(new Position(3), Mode::fromCurrentPosition()));
+        $this->assertSame(
+            $stream,
+            $stream->seek(new Position(3), Mode::fromCurrentPosition)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(6, $stream->position()->toInt());
-        $this->assertNull($stream->seek(new Position(3)));
+        $this->assertSame(
+            $stream,
+            $stream->seek(new Position(3))->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(3, $stream->position()->toInt());
     }
 
@@ -77,10 +98,16 @@ class BidirectionalTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Bidirectional($resource);
+        $stream = Bidirectional::of($resource);
         $stream->seek(new Position(3));
 
-        $this->assertNull($stream->rewind());
+        $this->assertSame(
+            $stream,
+            $stream->rewind()->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(0, $stream->position()->toInt());
     }
 
@@ -88,7 +115,7 @@ class BidirectionalTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Bidirectional($resource);
+        $stream = Bidirectional::of($resource);
 
         $this->assertFalse($stream->end());
         \fread($resource, 10);
@@ -99,104 +126,146 @@ class BidirectionalTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Bidirectional($resource);
+        $stream = Bidirectional::of($resource);
 
-        $this->assertTrue($stream->knowsSize());
-        $this->assertInstanceOf(Size::class, $stream->size());
-        $this->assertSame(9, $stream->size()->toInt());
+        $size = $stream->size()->match(
+            static fn($size) => $size,
+            static fn() => null,
+        );
+        $this->assertInstanceOf(Size::class, $size);
+        $this->assertSame(9, $size->toInt());
     }
 
     public function testClose()
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Bidirectional($resource);
+        $stream = Bidirectional::of($resource);
 
         $this->assertFalse($stream->closed());
-        $this->assertNull($stream->close());
+        $this->assertInstanceOf(
+            SideEffect::class,
+            $stream->close()->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertTrue($stream->closed());
     }
 
     public function testWrite()
     {
         $resource = \tmpfile();
-        $stream = new Bidirectional($resource);
+        $stream = Bidirectional::of($resource);
 
-        $this->assertNull($stream->write(Str::of('foobarbaz')));
+        $this->assertSame(
+            $stream,
+            $stream->write(Str::of('foobarbaz'))->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         \fseek($resource, 0);
         $this->assertSame('foobarbaz', \stream_get_contents($resource));
     }
 
-    public function testThrowWhenWritingToClosedStream()
+    public function testReturnErrorWhenWritingToClosedStream()
     {
         $resource = \tmpfile();
-        $stream = new Bidirectional($resource);
-
-        $this->expectException(FailedToWriteToStream::class);
+        $stream = Bidirectional::of($resource);
 
         $stream->close();
-        $stream->write(Str::of('foo'));
+        $this->assertInstanceOf(
+            FailedToWriteToStream::class,
+            $stream->write(Str::of('foo'))->match(
+                static fn() => null,
+                static fn($e) => $e,
+            ),
+        );
     }
 
-    public function testThrowWhenWriteFailed()
+    public function testReturnErrorWhenWriteFailed()
     {
         $resource = \fopen('php://temp', 'r');
-        $stream = new Bidirectional($resource);
+        $stream = Bidirectional::of($resource);
 
-        $this->expectException(FailedToWriteToStream::class);
-
-        $stream->write(Str::of('foo'));
+        $this->assertInstanceOf(
+            FailedToWriteToStream::class,
+            $stream->write(Str::of('foo'))->match(
+                static fn() => null,
+                static fn($e) => $e,
+            ),
+        );
     }
 
     public function testThrowWhenDataPartiallyWritten()
     {
         $resource = \fopen('php://temp', 'w');
-        $stream = new Bidirectional($resource);
+        $stream = Bidirectional::of($resource);
 
-        try {
-            $stream->write($data = Str::of('🤔')); // because it doesn't use ASCII encoding
-            $this->fail('it should throw');
-        } catch (DataPartiallyWritten $e) {
-            $this->assertSame($data, $e->data());
-            $this->assertSame(4, $e->written());
-            $this->assertSame(
-                '4 out of 1 written, it seems you are not using the correct string encoding',
-                $e->getMessage(),
-            );
-        }
+        // because it doesn't use ASCII encoding
+        $error = $stream->write($data = Str::of('🤔'))->match(
+            static fn() => null,
+            static fn($e) => $e,
+        );
+        $this->assertInstanceOf(DataPartiallyWritten::class, $error);
+        $this->assertSame($data, $error->data());
+        $this->assertSame(4, $error->written());
+        $this->assertSame(
+            '4 out of 1 written, it seems you are not using the correct string encoding',
+            $error->message(),
+        );
     }
 
     public function testRead()
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Bidirectional($resource);
-        $text = $stream->read(3);
+        $stream = Bidirectional::of($resource);
+        $text = $stream->read(3)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Str::class, $text);
         $this->assertSame('foo', $text->toString());
-        $this->assertSame('bar', $stream->read(3)->toString());
-        $this->assertSame('baz', $stream->read(3)->toString());
-        $this->assertSame('', $stream->read(3)->toString());
+        $this->assertSame('bar', $stream->read(3)->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
+        $this->assertSame('baz', $stream->read(3)->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
+        $this->assertSame('', $stream->read(3)->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
     }
 
     public function testReadOnceClosed()
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Bidirectional($resource);
+        $stream = Bidirectional::of($resource);
         $stream->close();
 
-        $this->assertSame('', $stream->read()->toString());
+        $this->assertNull($stream->read()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 
     public function testReadRemaining()
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Bidirectional($resource);
+        $stream = Bidirectional::of($resource);
         $stream->seek(new Position(3));
-        $text = $stream->read();
+        $text = $stream->read()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Str::class, $text);
         $this->assertSame('barbaz', $text->toString());
@@ -206,22 +275,37 @@ class BidirectionalTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, "foo\nbar\nbaz");
-        $stream = new Bidirectional($resource);
-        $line = $stream->readLine();
+        $stream = Bidirectional::of($resource);
+        $line = $stream->readLine()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Str::class, $line);
         $this->assertSame("foo\n", $line->toString());
-        $this->assertSame("bar\n", $stream->readLine()->toString());
-        $this->assertSame('baz', $stream->readLine()->toString());
-        $this->assertSame('', $stream->readLine()->toString());
+        $this->assertSame("bar\n", $stream->readLine()->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
+        $this->assertSame('baz', $stream->readLine()->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
+        $this->assertNull($stream->readLine()->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
     }
 
     public function testStringCast()
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new Bidirectional($resource);
+        $stream = Bidirectional::of($resource);
 
-        $this->assertSame('foobarbaz', $stream->toString());
+        $this->assertSame('foobarbaz', $stream->toString()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 }

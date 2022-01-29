@@ -15,7 +15,10 @@ final class ReadingRestFlagStreamEnd implements Property
 
     public function applicableTo(object $stream): bool
     {
-        return $stream->knowsSize();
+        return $stream->size()->match(
+            static fn() => true,
+            static fn() => false,
+        );
     }
 
     public function ensureHeldBy(object $stream): object

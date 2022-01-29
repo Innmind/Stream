@@ -3,9 +3,15 @@ declare(strict_types = 1);
 
 namespace Innmind\Stream;
 
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Either,
+};
 
 interface Writable extends Stream
 {
-    public function write(Str $data): void;
+    /**
+     * @return Either<FailedToWriteToStream|DataPartiallyWritten, self>
+     */
+    public function write(Str $data): Either;
 }

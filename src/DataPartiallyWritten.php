@@ -1,12 +1,16 @@
 <?php
 declare(strict_types = 1);
 
-namespace Innmind\Stream\Exception;
+namespace Innmind\Stream;
 
 use Innmind\Immutable\Str;
 
-final class DataPartiallyWritten extends RuntimeException
+/**
+ * @psalm-immutable
+ */
+final class DataPartiallyWritten
 {
+    private string $message;
     private Str $data;
     private int $written;
 
@@ -18,14 +22,19 @@ final class DataPartiallyWritten extends RuntimeException
             $suggestion = ', it seems you are not using the correct string encoding';
         }
 
-        parent::__construct(\sprintf(
+        $this->message = \sprintf(
             '%s out of %s written%s',
             $written,
             $data->length(),
             $suggestion,
-        ));
+        );
         $this->data = $data;
         $this->written = $written;
+    }
+
+    public function message(): string
+    {
+        return $this->message;
     }
 
     public function data(): Str

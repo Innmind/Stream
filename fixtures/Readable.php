@@ -23,6 +23,22 @@ final class Readable
     }
 
     /**
+     * @return Set<Stream>
+     */
+    public static function closed(): Set
+    {
+        return Set\Decorate::mutable(
+            static function(string $string): Stream {
+                $stream = Stream::ofContent($string);
+                $stream->close();
+
+                return $stream;
+            },
+            Set\Unicode::strings(),
+        );
+    }
+
+    /**
      * Simulate large files
      *
      * @return Set<Stream>
@@ -40,7 +56,7 @@ final class Readable
                     \fwrite($resource, $chunk);
                 }
 
-                return new Stream($resource);
+                return Stream::of($resource);
             },
             Set\Unicode::strings(),
             Set\Integers::between(1, 100),
@@ -57,7 +73,13 @@ final class Readable
             Set\Composite::mutable(
                 static function(Stream $stream, int $position): Stream {
                     $stream->seek(
-                        new Position(\min($position, $stream->size()->toInt())),
+                        new Position(\min(
+                            $position,
+                            $stream->size()->match(
+                                static fn($size) => $size->toInt(),
+                                static fn() => 0,
+                            ),
+                        )),
                     );
 
                     return $stream;

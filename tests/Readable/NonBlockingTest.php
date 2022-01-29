@@ -12,14 +12,17 @@ use Innmind\Stream\{
     Stream\Position\Mode,
     Stream\Size
 };
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    SideEffect,
+};
 use PHPUnit\Framework\TestCase;
 
 class NonBlockingTest extends TestCase
 {
     public function testInterface()
     {
-        $stream = new NonBlocking(new Stream(\tmpfile()));
+        $stream = NonBlocking::of(Stream::of(\tmpfile()));
 
         $this->assertInstanceOf(Readable::class, $stream);
         $this->assertInstanceOf(Selectable::class, $stream);
@@ -31,7 +34,7 @@ class NonBlockingTest extends TestCase
 
         $this->assertSame(
             $expected,
-            (new NonBlocking(new Stream($expected)))->resource()
+            NonBlocking::of(Stream::of($expected))->resource(),
         );
     }
 
@@ -39,23 +42,38 @@ class NonBlockingTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new NonBlocking(new Stream($resource));
-        $text = $stream->read(3);
+        $stream = NonBlocking::of(Stream::of($resource));
+        $text = $stream->read(3)->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Str::class, $text);
         $this->assertSame('foo', $text->toString());
-        $this->assertSame('bar', $stream->read(3)->toString());
-        $this->assertSame('baz', $stream->read(3)->toString());
-        $this->assertSame('', $stream->read(3)->toString());
+        $this->assertSame('bar', $stream->read(3)->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
+        $this->assertSame('baz', $stream->read(3)->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
+        $this->assertSame('', $stream->read(3)->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
     }
 
     public function testReadRemaining()
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new NonBlocking(new Stream($resource));
+        $stream = NonBlocking::of(Stream::of($resource));
         $stream->seek(new Position(3));
-        $text = $stream->read();
+        $text = $stream->read()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Str::class, $text);
         $this->assertSame('barbaz', $text->toString());
@@ -65,14 +83,26 @@ class NonBlockingTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, "foo\nbar\nbaz");
-        $stream = new NonBlocking(new Stream($resource));
-        $line = $stream->readLine();
+        $stream = NonBlocking::of(Stream::of($resource));
+        $line = $stream->readLine()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        );
 
         $this->assertInstanceOf(Str::class, $line);
         $this->assertSame("foo\n", $line->toString());
-        $this->assertSame("bar\n", $stream->readLine()->toString());
-        $this->assertSame('baz', $stream->readLine()->toString());
-        $this->assertSame('', $stream->readLine()->toString());
+        $this->assertSame("bar\n", $stream->readLine()->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
+        $this->assertSame('baz', $stream->readLine()->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
+        $this->assertNull($stream->readLine()->match(
+            static fn($value) => $value->toString(),
+            static fn() => null,
+        ));
     }
 
     public function testPosition()
@@ -82,7 +112,7 @@ class NonBlockingTest extends TestCase
 
         $this->assertSame(9, \ftell($resource));
 
-        $stream = new NonBlocking(new Stream($resource));
+        $stream = NonBlocking::of(Stream::of($resource));
 
         $this->assertInstanceOf(Position::class, $stream->position());
         $this->assertSame(0, $stream->position()->toInt());
@@ -92,13 +122,31 @@ class NonBlockingTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new NonBlocking(new Stream($resource));
+        $stream = NonBlocking::of(Stream::of($resource));
 
-        $this->assertNull($stream->seek(new Position(3)));
+        $this->assertSame(
+            $stream,
+            $stream->seek(new Position(3))->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(3, $stream->position()->toInt());
-        $this->assertNull($stream->seek(new Position(3), Mode::fromCurrentPosition()));
+        $this->assertSame(
+            $stream,
+            $stream->seek(new Position(3), Mode::fromCurrentPosition)->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(6, $stream->position()->toInt());
-        $this->assertNull($stream->seek(new Position(3)));
+        $this->assertSame(
+            $stream,
+            $stream->seek(new Position(3))->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(3, $stream->position()->toInt());
     }
 
@@ -106,10 +154,16 @@ class NonBlockingTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new NonBlocking(new Stream($resource));
+        $stream = NonBlocking::of(Stream::of($resource));
         $stream->seek(new Position(3));
 
-        $this->assertNull($stream->rewind());
+        $this->assertSame(
+            $stream,
+            $stream->rewind()->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertSame(0, $stream->position()->toInt());
     }
 
@@ -117,7 +171,7 @@ class NonBlockingTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new NonBlocking(new Stream($resource));
+        $stream = NonBlocking::of(Stream::of($resource));
 
         $this->assertFalse($stream->end());
         $stream->read();
@@ -128,21 +182,30 @@ class NonBlockingTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new NonBlocking(new Stream($resource));
+        $stream = NonBlocking::of(Stream::of($resource));
 
-        $this->assertTrue($stream->knowsSize());
-        $this->assertInstanceOf(Size::class, $stream->size());
-        $this->assertSame(9, $stream->size()->toInt());
+        $size = $stream->size()->match(
+            static fn($size) => $size,
+            static fn() => null,
+        );
+        $this->assertInstanceOf(Size::class, $size);
+        $this->assertSame(9, $size->toInt());
     }
 
     public function testClose()
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new NonBlocking(new Stream($resource));
+        $stream = NonBlocking::of(Stream::of($resource));
 
         $this->assertFalse($stream->closed());
-        $this->assertNull($stream->close());
+        $this->assertInstanceOf(
+            SideEffect::class,
+            $stream->close()->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         $this->assertTrue($stream->closed());
     }
 
@@ -150,8 +213,11 @@ class NonBlockingTest extends TestCase
     {
         $resource = \tmpfile();
         \fwrite($resource, 'foobarbaz');
-        $stream = new NonBlocking(new Stream($resource));
+        $stream = NonBlocking::of(Stream::of($resource));
 
-        $this->assertSame('foobarbaz', $stream->toString());
+        $this->assertSame('foobarbaz', $stream->toString()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
     }
 }

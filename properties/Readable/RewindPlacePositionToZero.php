@@ -20,7 +20,13 @@ final class RewindPlacePositionToZero implements Property
 
     public function ensureHeldBy(object $stream): object
     {
-        Assert::assertNull($stream->rewind());
+        Assert::assertSame(
+            $stream,
+            $stream->rewind()->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
         Assert::assertSame(
             0,
             $stream->position()->toInt(),

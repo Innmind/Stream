@@ -11,10 +11,14 @@ use Innmind\Stream\{
     Stream\Size,
     Stream\Position,
     Stream\Position\Mode,
-    Exception\FailedToWriteToStream,
-    Exception\DataPartiallyWritten
+    DataPartiallyWritten,
+    FailedToWriteToStream,
 };
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+    Either,
+};
 
 final class Stream implements Writable, Selectable
 {
@@ -26,10 +30,18 @@ final class Stream implements Writable, Selectable
     /**
      * @param resource $resource
      */
-    public function __construct($resource)
+    private function __construct($resource)
     {
-        $this->stream = new Base($resource);
+        $this->stream = Base::of($resource);
         $this->resource = $resource;
+    }
+
+    /**
+     * @param resource $resource
+     */
+    public static function of($resource): self
+    {
+        return new self($resource);
     }
 
     public function resource()
@@ -37,21 +49,27 @@ final class Stream implements Writable, Selectable
         return $this->resource;
     }
 
-    public function write(Str $data): void
+    public function write(Str $data): Either
     {
         if ($this->closed()) {
-            throw new FailedToWriteToStream;
+            /** @var Either<FailedToWriteToStream|DataPartiallyWritten, Writable> */
+            return Either::left(new FailedToWriteToStream);
         }
 
         $written = @\fwrite($this->resource, $data->toString());
 
         if ($written === false) {
-            throw new FailedToWriteToStream;
+            /** @var Either<FailedToWriteToStream|DataPartiallyWritten, Writable> */
+            return Either::left(new FailedToWriteToStream);
         }
 
         if ($written !== $data->length()) {
-            throw new DataPartiallyWritten($data, $written);
+            /** @var Either<FailedToWriteToStream|DataPartiallyWritten, Writable> */
+            return Either::left(new DataPartiallyWritten($data, $written));
         }
+
+        /** @var Either<FailedToWriteToStream|DataPartiallyWritten, Writable> */
+        return Either::right($this);
     }
 
     public function position(): Position
@@ -59,14 +77,18 @@ final class Stream implements Writable, Selectable
         return $this->stream->position();
     }
 
-    public function seek(Position $position, Mode $mode = null): void
+    /** @psalm-suppress InvalidReturnType */
+    public function seek(Position $position, Mode $mode = null): Either
     {
-        $this->stream->seek($position, $mode);
+        /** @psalm-suppress InvalidReturnStatement */
+        return $this->stream->seek($position, $mode)->map(fn() => $this);
     }
 
-    public function rewind(): void
+    /** @psalm-suppress InvalidReturnType */
+    public function rewind(): Either
     {
-        $this->stream->rewind();
+        /** @psalm-suppress InvalidReturnStatement */
+        return $this->stream->rewind()->map(fn() => $this);
     }
 
     public function end(): bool
@@ -74,21 +96,22 @@ final class Stream implements Writable, Selectable
         return $this->stream->end();
     }
 
-    public function size(): Size
+    /**
+     * @psalm-mutation-free
+     */
+    public function size(): Maybe
     {
         return $this->stream->size();
     }
 
-    public function knowsSize(): bool
+    public function close(): Either
     {
-        return $this->stream->knowsSize();
+        return $this->stream->close();
     }
 
-    public function close(): void
-    {
-        $this->stream->close();
-    }
-
+    /**
+     * @psalm-mutation-free
+     */
     public function closed(): bool
     {
         return $this->stream->closed();

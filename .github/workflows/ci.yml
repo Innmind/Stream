@@ -20,7 +20,8 @@ jobs:
           php-version: ${{ matrix.php-version }}
           extensions: mbstring, intl
           coverage: none
-      - uses: "ramsey/composer-install@v2"
+      - name: Composer
+        uses: "ramsey/composer-install@v2"
         with:
           dependency-version: ${{ matrix.dependencies }}
       - name: PHPUnit
@@ -43,7 +44,8 @@ jobs:
           php-version: ${{ matrix.php-version }}
           extensions: mbstring, intl
           coverage: xdebug
-      - uses: "ramsey/composer-install@v2"
+      - name: Composer
+        uses: "ramsey/composer-install@v2"
       - name: PHPUnit
         run: vendor/bin/phpunit --coverage-clover=coverage.clover
         env:
@@ -66,7 +68,8 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           extensions: mbstring, intl
-      - uses: "ramsey/composer-install@v2"
+      - name: Composer
+        uses: "ramsey/composer-install@v2"
         with:
           dependency-version: ${{ matrix.dependencies }}
       - name: Psalm
@@ -85,6 +88,7 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           extensions: mbstring, intl
-      - uses: "ramsey/composer-install@v2"
+      - name: Composer
+        uses: "ramsey/composer-install@v2"
       - name: CS
         run: vendor/bin/php-cs-fixer fix --diff --dry-run

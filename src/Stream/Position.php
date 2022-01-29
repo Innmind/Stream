@@ -5,6 +5,9 @@ namespace Innmind\Stream\Stream;
 
 use Innmind\Stream\Exception\PositionCantBeNegative;
 
+/**
+ * @psalm-immutable
+ */
 final class Position
 {
     private int $value;

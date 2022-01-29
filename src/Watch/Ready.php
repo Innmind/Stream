@@ -3,37 +3,35 @@ declare(strict_types = 1);
 
 namespace Innmind\Stream\Watch;
 
-use Innmind\Stream\Selectable;
+use Innmind\Stream\{
+    Selectable,
+    Readable,
+    Writable,
+};
 use Innmind\Immutable\Set;
-use function Innmind\Immutable\assertSet;
 
+/**
+ * @psalm-immutable
+ */
 final class Ready
 {
-    /** @var Set<Selectable> */
+    /** @var Set<Selectable&Readable> */
     private Set $read;
-    /** @var Set<Selectable> */
+    /** @var Set<Selectable&Writable> */
     private Set $write;
-    /** @var Set<Selectable> */
-    private Set $outOfBand;
 
     /**
-     * @param Set<Selectable> $read
-     * @param Set<Selectable> $write
-     * @param Set<Selectable> $outOfBand
+     * @param Set<Selectable&Readable> $read
+     * @param Set<Selectable&Writable> $write
      */
-    public function __construct(Set $read, Set $write, Set $outOfBand)
+    public function __construct(Set $read, Set $write)
     {
-        assertSet(Selectable::class, $read, 1);
-        assertSet(Selectable::class, $write, 2);
-        assertSet(Selectable::class, $outOfBand, 3);
-
         $this->read = $read;
         $this->write = $write;
-        $this->outOfBand = $outOfBand;
     }
 
     /**
-     * @return Set<Selectable>
+     * @return Set<Selectable&Readable>
      */
     public function toRead(): Set
     {
@@ -41,18 +39,10 @@ final class Ready
     }
 
     /**
-     * @return Set<Selectable>
+     * @return Set<Selectable&Writable>
      */
     public function toWrite(): Set
     {
         return $this->write;
-    }
-
-    /**
-     * @return Set<Selectable>
-     */
-    public function toOutOfBand(): Set
-    {
-        return $this->outOfBand;
     }
 }

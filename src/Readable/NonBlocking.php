@@ -12,14 +12,18 @@ use Innmind\Stream\{
     Stream\Position\Mode,
     Exception\NonBlockingModeNotSupported,
 };
-use Innmind\Immutable\Str;
+use Innmind\Immutable\{
+    Str,
+    Maybe,
+    Either,
+};
 
 final class NonBlocking implements Readable, Selectable
 {
     /** @var Readable&Selectable */
     private Readable $stream;
 
-    public function __construct(Selectable $selectable)
+    private function __construct(Selectable $selectable)
     {
         $resource = $selectable->resource();
         $return = \stream_set_blocking($resource, false);
@@ -28,27 +32,35 @@ final class NonBlocking implements Readable, Selectable
             throw new NonBlockingModeNotSupported;
         }
 
-        \stream_set_write_buffer($resource, 0);
-        \stream_set_read_buffer($resource, 0);
+        $_ = \stream_set_write_buffer($resource, 0);
+        $_ = \stream_set_read_buffer($resource, 0);
 
         if ($selectable instanceof Readable) {
             $this->stream = $selectable;
         } else {
-            $this->stream = new Stream($resource);
+            $this->stream = Stream::of($resource);
         }
     }
 
+    public static function of(Selectable $selectable): self
+    {
+        return new self($selectable);
+    }
+
+    /**
+     * @psalm-mutation-free
+     */
     public function resource()
     {
         return $this->stream->resource();
     }
 
-    public function read(int $length = null): Str
+    public function read(int $length = null): Maybe
     {
         return $this->stream->read($length);
     }
 
-    public function readLine(): Str
+    public function readLine(): Maybe
     {
         return $this->stream->readLine();
     }
@@ -58,14 +70,18 @@ final class NonBlocking implements Readable, Selectable
         return $this->stream->position();
     }
 
-    public function seek(Position $position, Mode $mode = null): void
+    /** @psalm-suppress InvalidReturnType */
+    public function seek(Position $position, Mode $mode = null): Either
     {
-        $this->stream->seek($position, $mode);
+        /** @psalm-suppress InvalidReturnStatement */
+        return $this->stream->seek($position, $mode)->map(fn() => $this);
     }
 
-    public function rewind(): void
+    /** @psalm-suppress InvalidReturnType */
+    public function rewind(): Either
     {
-        $this->stream->rewind();
+        /** @psalm-suppress InvalidReturnStatement */
+        return $this->stream->rewind()->map(fn() => $this);
     }
 
     public function end(): bool
@@ -73,27 +89,28 @@ final class NonBlocking implements Readable, Selectable
         return $this->stream->end();
     }
 
-    public function size(): Size
+    /**
+     * @psalm-mutation-free
+     */
+    public function size(): Maybe
     {
         return $this->stream->size();
     }
 
-    public function knowsSize(): bool
+    public function close(): Either
     {
-        return $this->stream->knowsSize();
+        return $this->stream->close();
     }
 
-    public function close(): void
-    {
-        $this->stream->close();
-    }
-
+    /**
+     * @psalm-mutation-free
+     */
     public function closed(): bool
     {
         return $this->stream->closed();
     }
 
-    public function toString(): string
+    public function toString(): Maybe
     {
         return $this->stream->toString();
     }

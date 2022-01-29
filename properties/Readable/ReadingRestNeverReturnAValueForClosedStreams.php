@@ -6,21 +6,24 @@ namespace Properties\Innmind\Stream\Readable;
 use Innmind\BlackBox\Property;
 use PHPUnit\Framework\Assert;
 
-final class CastAlwaysReturnAString implements Property
+final class ReadingRestNeverReturnAValueForClosedStreams implements Property
 {
     public function name(): string
     {
-        return 'Cast always return a string';
+        return 'Reading rest never return a value for closed streams';
     }
 
     public function applicableTo(object $stream): bool
     {
-        return true;
+        return $stream->closed();
     }
 
     public function ensureHeldBy(object $stream): object
     {
-        Assert::assertIsString($stream->toString());
+        Assert::assertNull($stream->read()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
 
         return $stream;
     }

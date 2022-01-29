@@ -7,6 +7,7 @@ use Innmind\Stream\{
     Watch,
     Selectable,
 };
+use Innmind\Immutable\Maybe;
 use Psr\Log\LoggerInterface;
 
 final class Logger implements Watch
@@ -14,31 +15,29 @@ final class Logger implements Watch
     private Watch $watch;
     private LoggerInterface $logger;
 
-    public function __construct(Watch $watch, LoggerInterface $logger)
+    private function __construct(Watch $watch, LoggerInterface $logger)
     {
         $this->watch = $watch;
         $this->logger = $logger;
     }
 
-    public function __invoke(): Ready
+    public function __invoke(): Maybe
     {
-        $ready = ($this->watch)();
-
-        $this->logger->info(
-            'Streams ready: {read} for read, {write} for write, {oob} for out of band',
-            [
-                'read' => $ready->toRead()->size(),
-                'write' => $ready->toWrite()->size(),
-                'oob' => $ready->toOutOfBand()->size(),
-            ],
-        );
-
-        return $ready;
+        return ($this->watch)()->map(fn($ready) => $this->log($ready));
     }
 
+    public static function psr(Watch $watch, LoggerInterface $logger): self
+    {
+        return new self($watch, $logger);
+    }
+
+    /**
+     * @psalm-mutation-free
+     */
     public function forRead(Selectable $read, Selectable ...$reads): Watch
     {
-        $this->logger->info(
+        /** @psalm-suppress ImpureMethodCall */
+        $this->logger->debug(
             'Adding {count} streams to watch for read',
             ['count' => \count($reads) + 1],
         );
@@ -49,9 +48,13 @@ final class Logger implements Watch
         );
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function forWrite(Selectable $write, Selectable ...$writes): Watch
     {
-        $this->logger->info(
+        /** @psalm-suppress ImpureMethodCall */
+        $this->logger->debug(
             'Adding {count} streams to watch for write',
             ['count' => \count($writes) + 1],
         );
@@ -62,26 +65,30 @@ final class Logger implements Watch
         );
     }
 
-    public function forOutOfBand(Selectable $outOfBand, Selectable ...$outOfBands): Watch
-    {
-        $this->logger->info(
-            'Adding {count} streams to watch for out of band',
-            ['count' => \count($outOfBands) + 1],
-        );
-
-        return new self(
-            $this->watch->forOutOfBand($outOfBand, ...$outOfBands),
-            $this->logger,
-        );
-    }
-
+    /**
+     * @psalm-mutation-free
+     */
     public function unwatch(Selectable $stream): Watch
     {
-        $this->logger->info('Removing a stream from watch list');
+        /** @psalm-suppress ImpureMethodCall */
+        $this->logger->debug('Removing a stream from watch list');
 
         return new self(
             $this->watch->unwatch($stream),
             $this->logger,
         );
+    }
+
+    private function log(Ready $ready): Ready
+    {
+        $this->logger->debug(
+            'Streams ready: {read} for read, {write} for write',
+            [
+                'read' => $ready->toRead()->size(),
+                'write' => $ready->toWrite()->size(),
+            ],
+        );
+
+        return $ready;
     }
 }

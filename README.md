@@ -23,10 +23,16 @@ use Innmind\Url\Path;
 $file = Stream::open(Path::of('/some/path/to/a/file'));
 
 while (!$file->end()) {
-    echo $file->readLine()->toString();
+    echo $file->readLine()->match(
+        static fn($line) => $line->toString(),
+        static fn() => throw new \Exception('failed to read the stream'),
+    );
 }
 
-$file->close();
+$file->close()->match(
+    static fn() => null, // closed correctly
+    static fn() => throw new \Exception('failed to close the stream'),
+);
 ```
 
 Socket handling:
@@ -37,19 +43,25 @@ use Innmind\Stream\{
     Watch\Select,
 };
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
+use Innmind\Immutable\Either;
 
 $socket = new Bidirectional(stream_socket_client('unix:///path/to/socket.sock'));
-$select = (new Select(new ElapsedPeriod(60 * 1000))) //select with a 1 minute timeout
+$select = Select::timeoutAfter(new ElapsedPeriod(60 * 1000)) // select with a 1 minute timeout
     ->forRead($socket);
 
 do {
-    $ready = $select();
-
-    if ($ready->toRead()->contains($socket)) {
-        $socket->write(
-            $socket->read()->toUpper()
+    $socket = $select()
+        ->filter(static fn($ready) => $ready->toRead()->contains($socket))
+        ->flatMap(static fn() => $socket->read())
+        ->map(static fn($data) => $data->toUpper())
+        ->match(
+            static fn($data) => $socket->write($data),
+            static fn() => Either::right($socket), // no data to send
+        )
+        ->match(
+            static fn($socket) => $socket, // data sent back
+            static fn($error) => throw new \Exception(\get_class($error)),
         );
-    }
 } while (true);
 ```
 

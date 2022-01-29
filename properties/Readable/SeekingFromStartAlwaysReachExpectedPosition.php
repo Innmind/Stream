@@ -23,19 +23,40 @@ final class SeekingFromStartAlwaysReachExpectedPosition implements Property
 
     public function applicableTo(object $stream): bool
     {
-        return !$stream->closed() && $stream->knowsSize();
+        return !$stream->closed() && $stream->size()->match(
+            static fn() => true,
+            static fn() => false,
+        );
     }
 
     public function ensureHeldBy(object $stream): object
     {
-        Assert::assertNull($stream->seek(
-            new Position(
-                \min($this->position, $stream->size()->toInt()),
-            ),
-            Position\Mode::fromStart(),
-        ));
         Assert::assertSame(
-            \min($this->position, $stream->size()->toInt()),
+            $stream,
+            $stream->seek(
+                new Position(
+                    \min(
+                        $this->position,
+                        $stream->size()->match(
+                            static fn($size) => $size->toInt(),
+                            static fn() => 0,
+                        ),
+                    ),
+                ),
+                Position\Mode::fromStart,
+            )->match(
+                static fn($value) => $value,
+                static fn() => null,
+            ),
+        );
+        Assert::assertSame(
+            \min(
+                $this->position,
+                $stream->size()->match(
+                    static fn($size) => $size->toInt(),
+                    static fn() => 0,
+                ),
+            ),
             $stream->position()->toInt(),
         );
 

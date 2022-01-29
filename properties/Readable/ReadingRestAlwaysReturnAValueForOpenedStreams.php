@@ -7,21 +7,24 @@ use Innmind\Immutable\Str;
 use Innmind\BlackBox\Property;
 use PHPUnit\Framework\Assert;
 
-final class ReadingLineAlwaysReturnAValue implements Property
+final class ReadingRestAlwaysReturnAValueForOpenedStreams implements Property
 {
     public function name(): string
     {
-        return 'Reading line always return a value';
+        return 'Reading rest always return a value for opened streams';
     }
 
     public function applicableTo(object $stream): bool
     {
-        return true;
+        return !$stream->closed();
     }
 
     public function ensureHeldBy(object $stream): object
     {
-        Assert::assertInstanceOf(Str::class, $stream->readLine());
+        Assert::assertInstanceOf(Str::class, $stream->read()->match(
+            static fn($value) => $value,
+            static fn() => null,
+        ));
 
         return $stream;
     }

@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.1.0 - 2022-02-22
+
+### Changed
+
+- `Innmind\Stream\Stream::end()` is declared as mutation free
+
 ## 3.0.0 - 2022-01-29
 
 ### Changed

@@ -106,6 +106,9 @@ final class Stream implements Readable, Selectable
         return $this->stream->rewind()->map(fn() => $this);
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function end(): bool
     {
         return $this->stream->end();

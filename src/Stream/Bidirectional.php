@@ -82,6 +82,9 @@ final class Bidirectional implements BidirectionalInterface, Selectable
         return $this->read->rewind()->map(fn() => $this);
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function end(): bool
     {
         return $this->read->end();

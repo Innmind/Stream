@@ -96,6 +96,9 @@ final class Stream implements StreamInterface
         return $this->seek(new Position(0));
     }
 
+    /**
+     * @psalm-mutation-free
+     */
     public function end(): bool
     {
         if ($this->closed()) {

@@ -39,6 +39,10 @@ interface Stream
      * @return Either<PositionNotSeekable, self>
      */
     public function rewind(): Either;
+
+    /**
+     * @psalm-mutation-free
+     */
     public function end(): bool;
 
     /**

@@ -1,5 +1,11 @@
 # Changelog
 
+## 3.2.0 - 2022-03-19
+
+### Added
+
+- `Innmind\Stream\Watch\Select::waitForever()` named constructor
+
 ## 3.1.0 - 2022-02-22
 
 ### Changed

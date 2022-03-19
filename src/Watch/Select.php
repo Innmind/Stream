@@ -18,7 +18,8 @@ use Innmind\Immutable\{
 
 final class Select implements Watch
 {
-    private ElapsedPeriod $timeout;
+    /** @var Maybe<ElapsedPeriod> */
+    private Maybe $timeout;
     /** @var Map<resource, Selectable&Readable> */
     private Map $read;
     /** @var Map<resource, Selectable&Writable> */
@@ -28,9 +29,9 @@ final class Select implements Watch
     /** @var list<resource> */
     private array $writeResources;
 
-    private function __construct(ElapsedPeriod $timeout)
+    private function __construct(ElapsedPeriod $timeout = null)
     {
-        $this->timeout = $timeout;
+        $this->timeout = Maybe::of($timeout);
         /** @var Map<resource, Selectable&Readable> */
         $this->read = Map::of();
         /** @var Map<resource, Selectable&Writable> */
@@ -56,8 +57,12 @@ final class Select implements Watch
         $read = $this->readResources;
         $write = $this->writeResources;
         $outOfBand = [];
-        $seconds = (int) ($this->timeout->milliseconds() / 1000);
-        $microseconds = ($this->timeout->milliseconds() - ($seconds * 1000)) * 1000;
+        [$seconds, $microseconds] = $this
+            ->timeout
+            ->match(
+                $this->timeout(...),
+                static fn() => [null, null],
+            );
 
         $return = @\stream_select(
             $read,
@@ -101,6 +106,11 @@ final class Select implements Watch
     public static function timeoutAfter(ElapsedPeriod $timeout): self
     {
         return new self($timeout);
+    }
+
+    public static function waitForever(): self
+    {
+        return new self;
     }
 
     /**
@@ -174,5 +184,16 @@ final class Select implements Watch
         ));
 
         return $self;
+    }
+
+    /**
+     * @return array{0: int, 1: int}
+     */
+    private function timeout(ElapsedPeriod $timeout): array
+    {
+        $seconds = (int) ($timeout->milliseconds() / 1000);
+        $microseconds = ($timeout->milliseconds() - ($seconds * 1000)) * 1000;
+
+        return [$seconds, $microseconds];
     }
 }

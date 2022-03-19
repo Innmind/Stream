@@ -167,4 +167,27 @@ class SelectTest extends TestCase
         $this->assertCount(0, $streams->toRead());
         $this->assertCount(0, $streams->toWrite());
     }
+
+    public function testWaitForever()
+    {
+        $read = $this->createMock(Selectable::class);
+        $read
+            ->expects($this->exactly(2))
+            ->method('resource')
+            ->willReturn($readSocket = \stream_socket_client('unix:///tmp/read.sock'));
+        $select = Select::waitForever()->forRead($read);
+        \fwrite($readSocket, 'foo');
+
+        $ready = $select()->match(
+            static fn($ready) => $ready,
+            static fn() => null,
+        );
+
+        $this->assertInstanceOf(Ready::class, $ready);
+        $this->assertCount(1, $ready->toRead());
+        $this->assertSame($read, $ready->toRead()->find(static fn() => true)->match(
+            static fn($stream) => $stream,
+            static fn() => null,
+        ));
+    }
 }

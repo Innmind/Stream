@@ -93,7 +93,7 @@ final class Select implements Watch
          */
         $writable = $this
             ->write
-            ->filter(static fn($resource) => \in_array($resource, $write ?? [], true))
+            ->filter(static fn($resource) => \in_array($resource, $write, true))
             ->values()
             ->reduce(
                 Set::of(),

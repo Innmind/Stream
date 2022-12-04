@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- `Innmind\Stream\Streams` to have a central point from where to open watch for streams
+
 ## 3.2.0 - 2022-03-19
 
 ### Added

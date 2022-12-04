@@ -17,10 +17,10 @@ composer require innmind/stream
 File handling:
 
 ```php
-use Innmind\Stream\Readable\Stream;
+use Innmind\Stream\Streams;
 use Innmind\Url\Path;
 
-$file = Stream::open(Path::of('/some/path/to/a/file'));
+$file = Streams::of()->readable()->open(Path::of('/some/path/to/a/file'));
 
 while (!$file->end()) {
     echo $file->readLine()->match(
@@ -40,13 +40,15 @@ Socket handling:
 ```php
 use Innmind\Stream\{
     Stream\Bidirectional,
-    Watch\Select,
+    Streams,
 };
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Innmind\Immutable\Either;
 
-$socket = new Bidirectional(stream_socket_client('unix:///path/to/socket.sock'));
-$select = Select::timeoutAfter(new ElapsedPeriod(60 * 1000)) // select with a 1 minute timeout
+$socket = Bidirectional::of(\stream_socket_client('unix:///path/to/socket.sock'));
+$select = Streams::of()
+    ->watch()
+    ->timeoutAfter(new ElapsedPeriod(60 * 1000)) // select with a 1 minute timeout
     ->forRead($socket);
 
 do {

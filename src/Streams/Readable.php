@@ -27,4 +27,9 @@ final class Readable implements Capabilities\Readable
     {
         return Read\Stream::open($path);
     }
+
+    public function acquire($resource): Read
+    {
+        return Read\Stream::of($resource);
+    }
 }

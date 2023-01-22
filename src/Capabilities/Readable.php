@@ -9,4 +9,9 @@ use Innmind\Url\Path;
 interface Readable
 {
     public function open(Path $path): Read;
+
+    /**
+     * @param resource $resource
+     */
+    public function acquire($resource): Read;
 }

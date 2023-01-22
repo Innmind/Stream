@@ -9,4 +9,9 @@ use Innmind\Url\Path;
 interface Writable
 {
     public function open(Path $path): Write;
+
+    /**
+     * @param resource $resource
+     */
+    public function acquire($resource): Write;
 }

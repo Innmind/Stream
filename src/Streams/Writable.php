@@ -27,4 +27,9 @@ final class Writable implements Capabilities\Writable
     {
         return Write\Stream::of(\fopen($path->toString(), 'w'));
     }
+
+    public function acquire($resource): Write
+    {
+        return Write\Stream::of($resource);
+    }
 }

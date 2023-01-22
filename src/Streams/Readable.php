@@ -3,10 +3,13 @@ declare(strict_types = 1);
 
 namespace Innmind\Stream\Streams;
 
-use Innmind\Stream\Readable as Read;
+use Innmind\Stream\{
+    Capabilities,
+    Readable as Read,
+};
 use Innmind\Url\Path;
 
-final class Readable
+final class Readable implements Capabilities\Readable
 {
     private function __construct()
     {

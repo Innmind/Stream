@@ -3,7 +3,7 @@ declare(strict_types = 1);
 
 namespace Innmind\Stream;
 
-final class Streams
+final class Streams implements Capabilities
 {
     private function __construct()
     {

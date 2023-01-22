@@ -4,12 +4,13 @@ declare(strict_types = 1);
 namespace Innmind\Stream\Streams;
 
 use Innmind\Stream\{
+    Capabilities,
     Watch as WatchInterface,
     Watch\Select,
 };
 use Innmind\TimeContinuum\ElapsedPeriod;
 
-final class Watch
+final class Watch implements Capabilities\Watch
 {
     private function __construct()
     {

@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- `Innmind\Stream\Capabilities` (implemented by alreayd existing `Innmind\Stream\Streams`)
+
 ## 3.3.0 - 2022-12-04
 
 ### Added

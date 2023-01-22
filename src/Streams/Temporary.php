@@ -4,11 +4,12 @@ declare(strict_types = 1);
 namespace Innmind\Stream\Streams;
 
 use Innmind\Stream\{
+    Capabilities,
     Bidirectional,
     Stream,
 };
 
-final class Temporary
+final class Temporary implements Capabilities\Temporary
 {
     private function __construct()
     {

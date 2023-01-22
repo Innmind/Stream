@@ -5,6 +5,7 @@ namespace Tests\Innmind\Stream;
 
 use Innmind\Stream\{
     Streams,
+    Capabilities,
     Watch\Select,
 };
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
@@ -14,6 +15,14 @@ use PHPUnit\Framework\TestCase;
 
 class StreamsTest extends TestCase
 {
+    public function testInterface()
+    {
+        $this->assertInstanceOf(
+            Capabilities::class,
+            Streams::of(),
+        );
+    }
+
     public function testOpeningATemporaryStreamAlwaysReturnANewOne()
     {
         $streams = Streams::of();

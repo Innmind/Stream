@@ -5,6 +5,11 @@
 ### Added
 
 - `Innmind\Stream\Capabilities` (implemented by alreayd existing `Innmind\Stream\Streams`)
+- `Innmind\Stream\Streams::fromAmbientAuthority()`
+
+### Deprecated
+
+- `Innmind\Stream\Streams::of()` use `::fromAmbientAuthority()` instead
 
 ## 3.3.0 - 2022-12-04
 

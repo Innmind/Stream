@@ -6,10 +6,15 @@
 
 - `Innmind\Stream\Capabilities` (implemented by alreayd existing `Innmind\Stream\Streams`)
 - `Innmind\Stream\Streams::fromAmbientAuthority()`
+- `Innmind\Stream\Stream::resource(): resource`
 
 ### Deprecated
 
 - `Innmind\Stream\Streams::of()` use `::fromAmbientAuthority()` instead
+
+### Removed
+
+- `Innmind\Stream\Selectable`
 
 ## 3.3.0 - 2022-12-04
 

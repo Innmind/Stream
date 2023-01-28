@@ -4,7 +4,6 @@ declare(strict_types = 1);
 namespace Innmind\Stream\Watch;
 
 use Innmind\Stream\{
-    Selectable,
     Readable,
     Writable,
 };
@@ -15,14 +14,14 @@ use Innmind\Immutable\Set;
  */
 final class Ready
 {
-    /** @var Set<Selectable&Readable> */
+    /** @var Set<Readable> */
     private Set $read;
-    /** @var Set<Selectable&Writable> */
+    /** @var Set<Writable> */
     private Set $write;
 
     /**
-     * @param Set<Selectable&Readable> $read
-     * @param Set<Selectable&Writable> $write
+     * @param Set<Readable> $read
+     * @param Set<Writable> $write
      */
     public function __construct(Set $read, Set $write)
     {
@@ -31,7 +30,7 @@ final class Ready
     }
 
     /**
-     * @return Set<Selectable&Readable>
+     * @return Set<Readable>
      */
     public function toRead(): Set
     {
@@ -39,7 +38,7 @@ final class Ready
     }
 
     /**
-     * @return Set<Selectable&Writable>
+     * @return Set<Writable>
      */
     public function toWrite(): Set
     {

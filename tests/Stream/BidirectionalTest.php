@@ -9,7 +9,6 @@ use Innmind\Stream\{
     Readable,
     Writable,
     Bidirectional as BidirectionalInterface,
-    Selectable,
     Stream\Position,
     Stream\Position\Mode,
     Stream\Size,
@@ -32,7 +31,6 @@ class BidirectionalTest extends TestCase
         $this->assertInstanceOf(Readable::class, $stream);
         $this->assertInstanceOf(Writable::class, $stream);
         $this->assertInstanceOf(BidirectionalInterface::class, $stream);
-        $this->assertInstanceOf(Selectable::class, $stream);
     }
 
     public function testThrowWhenNotAResource()

@@ -7,8 +7,6 @@ use Innmind\Stream\{
     Readable,
     Writable,
     Bidirectional as BidirectionalInterface,
-    Selectable,
-    Stream as StreamInterface,
     Stream\Position\Mode,
 };
 use Innmind\Immutable\{
@@ -18,7 +16,7 @@ use Innmind\Immutable\{
     SideEffect,
 };
 
-final class Bidirectional implements BidirectionalInterface, Selectable
+final class Bidirectional implements BidirectionalInterface
 {
     private Readable $read;
     private Writable $write;

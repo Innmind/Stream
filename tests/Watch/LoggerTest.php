@@ -7,7 +7,9 @@ use Innmind\Stream\{
     Watch\Logger,
     Watch\Ready,
     Watch,
-    Selectable,
+    Readable,
+    Writable,
+    Stream,
 };
 use Innmind\Immutable\{
     Set as ISet,
@@ -37,16 +39,16 @@ class LoggerTest extends TestCase
 
     public function testWatch()
     {
-        $streams = Set\FromGenerator::of(function() {
+        $streams = fn($type) => Set\FromGenerator::of(function() use ($type) {
             while (true) {
-                yield $this->createMock(Selectable::class);
+                yield $this->createMock($type);
             }
         });
 
         $this
             ->forAll(
-                Set\Sequence::of($streams),
-                Set\Sequence::of($streams),
+                Set\Sequence::of($streams(Readable::class)),
+                Set\Sequence::of($streams(Writable::class)),
             )
             ->then(function($read, $write) {
                 $inner = $this->createMock(Watch::class);
@@ -81,7 +83,7 @@ class LoggerTest extends TestCase
     {
         $this
             ->forAll(Set\Sequence::of(
-                Set\Elements::of($this->createMock(Selectable::class)),
+                Set\Elements::of($this->createMock(Readable::class)),
                 Set\Integers::between(1, 10),
             ))
             ->then(function($streams) {
@@ -126,7 +128,7 @@ class LoggerTest extends TestCase
     {
         $this
             ->forAll(Set\Sequence::of(
-                Set\Elements::of($this->createMock(Selectable::class)),
+                Set\Elements::of($this->createMock(Writable::class)),
                 Set\Integers::between(1, 10),
             ))
             ->then(function($streams) {
@@ -169,7 +171,7 @@ class LoggerTest extends TestCase
 
     public function testUnwatch()
     {
-        $stream = $this->createMock(Selectable::class);
+        $stream = $this->createMock(Stream::class);
         $inner = $this->createMock(Watch::class);
         $inner
             ->expects($this->once())

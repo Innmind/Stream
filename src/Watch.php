@@ -15,22 +15,16 @@ interface Watch
 
     /**
      * @psalm-mutation-free
-     *
-     * @param Selectable&Readable $read
-     * @param Selectable&Readable $reads
      */
-    public function forRead(Selectable $read, Selectable ...$reads): self;
-
-    /**
-     * @psalm-mutation-free
-     *
-     * @param Selectable&Writable $write
-     * @param Selectable&Writable $writes
-     */
-    public function forWrite(Selectable $write, Selectable ...$writes): self;
+    public function forRead(Readable $read, Readable ...$reads): self;
 
     /**
      * @psalm-mutation-free
      */
-    public function unwatch(Selectable $stream): self;
+    public function forWrite(Writable $write, Writable ...$writes): self;
+
+    /**
+     * @psalm-mutation-free
+     */
+    public function unwatch(Stream $stream): self;
 }

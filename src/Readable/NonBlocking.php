@@ -6,7 +6,6 @@ namespace Innmind\Stream\Readable;
 use Innmind\Stream\{
     Stream as StreamInterface,
     Readable,
-    Selectable,
     Stream\Position,
     Stream\Size,
     Stream\Position\Mode,
@@ -18,14 +17,13 @@ use Innmind\Immutable\{
     Either,
 };
 
-final class NonBlocking implements Readable, Selectable
+final class NonBlocking implements Readable
 {
-    /** @var Readable&Selectable */
     private Readable $stream;
 
-    private function __construct(Selectable $selectable)
+    private function __construct(Readable $stream)
     {
-        $resource = $selectable->resource();
+        $resource = $stream->resource();
         $return = \stream_set_blocking($resource, false);
 
         if ($return === false) {
@@ -35,16 +33,12 @@ final class NonBlocking implements Readable, Selectable
         $_ = \stream_set_write_buffer($resource, 0);
         $_ = \stream_set_read_buffer($resource, 0);
 
-        if ($selectable instanceof Readable) {
-            $this->stream = $selectable;
-        } else {
-            $this->stream = Stream::of($resource);
-        }
+        $this->stream = $stream;
     }
 
-    public static function of(Selectable $selectable): self
+    public static function of(Readable $stream): self
     {
-        return new self($selectable);
+        return new self($stream);
     }
 
     /**

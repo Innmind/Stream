@@ -7,7 +7,8 @@ use Innmind\Stream\{
     Watch\Select,
     Watch\Ready,
     Watch,
-    Selectable
+    Readable,
+    Writable,
 };
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
 use Symfony\Component\Process\Process;
@@ -49,7 +50,7 @@ class SelectTest extends TestCase
     {
         $select = Select::timeoutAfter(new ElapsedPeriod(0));
         $resource = \fopen('php://temp', 'w');
-        $stream = $this->createMock(Selectable::class);
+        $stream = $this->createMock(Readable::class);
         $stream
             ->expects($this->exactly(2))
             ->method('resource')
@@ -65,7 +66,7 @@ class SelectTest extends TestCase
     {
         $select = Select::timeoutAfter(new ElapsedPeriod(0));
         $resource = \fopen('php://temp', 'w');
-        $stream = $this->createMock(Selectable::class);
+        $stream = $this->createMock(Writable::class);
         $stream
             ->expects($this->exactly(2))
             ->method('resource')
@@ -91,21 +92,21 @@ class SelectTest extends TestCase
 
     public function testInvoke()
     {
-        $read = $this->createMock(Selectable::class);
+        $read = $this->createMock(Readable::class);
         $read
             ->expects($this->exactly(2))
             ->method('resource')
-            ->willReturn($readSocket = \stream_socket_client('unix:///tmp/read.sock'));
-        $write = $this->createMock(Selectable::class);
+            ->willReturn($readSocket = \tmpfile());
+        $write = $this->createMock(Writable::class);
         $write
             ->expects($this->exactly(2))
             ->method('resource')
-            ->willReturn($writeSocket = \stream_socket_client('unix:///tmp/write.sock'));
+            ->willReturn($writeSocket = \tmpfile());
         $select = Select::timeoutAfter(new ElapsedPeriod(0))
             ->forRead($read)
             ->forWrite($write);
-        \fwrite($readSocket, 'foo');
-        \fwrite($writeSocket, 'foo');
+        $this->assertSame(3, \fwrite($readSocket, 'foo'));
+        $this->assertSame(3, \fwrite($writeSocket, 'foo'));
 
         $ready = $select()->match(
             static fn($ready) => $ready,
@@ -135,12 +136,12 @@ class SelectTest extends TestCase
 
     public function testUnwatch()
     {
-        $read = $this->createMock(Selectable::class);
+        $read = $this->createMock(Readable::class);
         $read
             ->expects($this->exactly(3))
             ->method('resource')
             ->willReturn($readSocket = \stream_socket_client('unix:///tmp/read.sock'));
-        $write = $this->createMock(Selectable::class);
+        $write = $this->createMock(Writable::class);
         $write
             ->expects($this->exactly(3))
             ->method('resource')
@@ -170,7 +171,7 @@ class SelectTest extends TestCase
 
     public function testWaitForever()
     {
-        $read = $this->createMock(Selectable::class);
+        $read = $this->createMock(Readable::class);
         $read
             ->expects($this->exactly(2))
             ->method('resource')

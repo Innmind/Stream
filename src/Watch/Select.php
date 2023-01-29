@@ -5,7 +5,7 @@ namespace Innmind\Stream\Watch;
 
 use Innmind\Stream\{
     Watch,
-    Selectable,
+    Stream,
     Readable,
     Writable,
 };
@@ -20,9 +20,9 @@ final class Select implements Watch
 {
     /** @var Maybe<ElapsedPeriod> */
     private Maybe $timeout;
-    /** @var Map<resource, Selectable&Readable> */
+    /** @var Map<resource, Readable> */
     private Map $read;
-    /** @var Map<resource, Selectable&Writable> */
+    /** @var Map<resource, Writable> */
     private Map $write;
     /** @var list<resource> */
     private array $readResources;
@@ -32,9 +32,9 @@ final class Select implements Watch
     private function __construct(ElapsedPeriod $timeout = null)
     {
         $this->timeout = Maybe::of($timeout);
-        /** @var Map<resource, Selectable&Readable> */
+        /** @var Map<resource, Readable> */
         $this->read = Map::of();
-        /** @var Map<resource, Selectable&Writable> */
+        /** @var Map<resource, Writable> */
         $this->write = Map::of();
         $this->readResources = [];
         $this->writeResources = [];
@@ -46,9 +46,9 @@ final class Select implements Watch
             $this->read->empty() &&
             $this->write->empty()
         ) {
-            /** @var Set<Selectable&Readable> */
+            /** @var Set<Readable> */
             $read = Set::of();
-            /** @var Set<Selectable&Writable> */
+            /** @var Set<Writable> */
             $write = Set::of();
 
             return Maybe::just(new Ready($read, $write));
@@ -78,7 +78,7 @@ final class Select implements Watch
         }
 
         /**
-         * @var Set<Selectable&Readable>
+         * @var Set<Readable>
          */
         $readable = $this
             ->read
@@ -89,7 +89,7 @@ final class Select implements Watch
                 static fn(Set $set, $stream): Set => ($set)($stream),
             );
         /**
-         * @var Set<Selectable&Writable>
+         * @var Set<Writable>
          */
         $writable = $this
             ->write
@@ -116,7 +116,7 @@ final class Select implements Watch
     /**
      * @psalm-mutation-free
      */
-    public function forRead(Selectable $read, Selectable ...$reads): Watch
+    public function forRead(Readable $read, Readable ...$reads): Watch
     {
         $self = clone $this;
         $self->read = ($self->read)(
@@ -139,7 +139,7 @@ final class Select implements Watch
     /**
      * @psalm-mutation-free
      */
-    public function forWrite(Selectable $write, Selectable ...$writes): Watch
+    public function forWrite(Writable $write, Writable ...$writes): Watch
     {
         $self = clone $this;
         $self->write = ($self->write)(
@@ -162,7 +162,7 @@ final class Select implements Watch
     /**
      * @psalm-mutation-free
      */
-    public function unwatch(Selectable $stream): Watch
+    public function unwatch(Stream $stream): Watch
     {
         $resource = $stream->resource();
         $self = clone $this;

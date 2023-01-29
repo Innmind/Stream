@@ -3,10 +3,13 @@ declare(strict_types = 1);
 
 namespace Innmind\Stream\Streams;
 
-use Innmind\Stream\Writable as Write;
+use Innmind\Stream\{
+    Capabilities,
+    Writable as Write,
+};
 use Innmind\Url\Path;
 
-final class Writable
+final class Writable implements Capabilities\Writable
 {
     private function __construct()
     {
@@ -23,5 +26,10 @@ final class Writable
     public function open(Path $path): Write
     {
         return Write\Stream::of(\fopen($path->toString(), 'w'));
+    }
+
+    public function acquire($resource): Write
+    {
+        return Write\Stream::of($resource);
     }
 }

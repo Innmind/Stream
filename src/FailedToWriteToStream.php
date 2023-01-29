@@ -8,4 +8,10 @@ namespace Innmind\Stream;
  */
 final class FailedToWriteToStream
 {
+    /**
+     * @internal
+     */
+    public function __construct()
+    {
+    }
 }

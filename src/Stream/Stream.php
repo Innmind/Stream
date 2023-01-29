@@ -56,6 +56,11 @@ final class Stream implements StreamInterface
         return new self($resource);
     }
 
+    public function resource()
+    {
+        return $this->resource;
+    }
+
     public function position(): Position
     {
         if ($this->closed()) {

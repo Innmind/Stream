@@ -3,13 +3,22 @@ declare(strict_types = 1);
 
 namespace Innmind\Stream;
 
-final class Streams
+final class Streams implements Capabilities
 {
     private function __construct()
     {
     }
 
+    /**
+     * @deprecated
+     * @see ::fromAmbientAuthority()
+     */
     public static function of(): self
+    {
+        return new self;
+    }
+
+    public static function fromAmbientAuthority(): self
     {
         return new self;
     }

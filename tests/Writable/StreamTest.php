@@ -6,7 +6,6 @@ namespace Tests\Innmind\Stream\Writable;
 use Innmind\Stream\{
     Writable\Stream,
     Writable,
-    Selectable,
     Stream\Position,
     Stream\Position\Mode,
     Stream\Size,
@@ -27,7 +26,6 @@ class StreamTest extends TestCase
         $stream = Stream::of(\tmpfile());
 
         $this->assertInstanceOf(Writable::class, $stream);
-        $this->assertInstanceOf(Selectable::class, $stream);
     }
 
     public function testThrowWhenNotAResource()

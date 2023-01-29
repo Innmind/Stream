@@ -5,6 +5,7 @@ namespace Tests\Innmind\Stream;
 
 use Innmind\Stream\{
     Streams,
+    Capabilities,
     Watch\Select,
 };
 use Innmind\TimeContinuum\Earth\ElapsedPeriod;
@@ -14,9 +15,17 @@ use PHPUnit\Framework\TestCase;
 
 class StreamsTest extends TestCase
 {
+    public function testInterface()
+    {
+        $this->assertInstanceOf(
+            Capabilities::class,
+            Streams::fromAmbientAuthority(),
+        );
+    }
+
     public function testOpeningATemporaryStreamAlwaysReturnANewOne()
     {
-        $streams = Streams::of();
+        $streams = Streams::fromAmbientAuthority();
         $a = $streams->temporary()->new()->write(Str::of('a'))->match(
             static fn($a) => $a,
             static fn() => null,
@@ -47,7 +56,7 @@ class StreamsTest extends TestCase
 
     public function testOpenReadable()
     {
-        $self = Streams::of()
+        $self = Streams::fromAmbientAuthority()
             ->readable()
             ->open(Path::of(__FILE__))
             ->toString()
@@ -62,7 +71,7 @@ class StreamsTest extends TestCase
     public function testOpenWritable()
     {
         $path = Path::of(\tempnam(\sys_get_temp_dir(), 'streams'));
-        $streams = Streams::of();
+        $streams = Streams::fromAmbientAuthority();
         $streams
             ->writable()
             ->open($path)
@@ -85,13 +94,13 @@ class StreamsTest extends TestCase
     {
         $this->assertInstanceOf(
             Select::class,
-            Streams::of()
+            Streams::fromAmbientAuthority()
                 ->watch()
                 ->waitForever(),
         );
         $this->assertInstanceOf(
             Select::class,
-            Streams::of()
+            Streams::fromAmbientAuthority()
                 ->watch()
                 ->timeoutAfter(new ElapsedPeriod(1)),
         );

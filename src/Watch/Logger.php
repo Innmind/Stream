@@ -5,7 +5,9 @@ namespace Innmind\Stream\Watch;
 
 use Innmind\Stream\{
     Watch,
-    Selectable,
+    Readable,
+    Writable,
+    Stream,
 };
 use Innmind\Immutable\Maybe;
 use Psr\Log\LoggerInterface;
@@ -34,7 +36,7 @@ final class Logger implements Watch
     /**
      * @psalm-mutation-free
      */
-    public function forRead(Selectable $read, Selectable ...$reads): Watch
+    public function forRead(Readable $read, Readable ...$reads): Watch
     {
         /** @psalm-suppress ImpureMethodCall */
         $this->logger->debug(
@@ -51,7 +53,7 @@ final class Logger implements Watch
     /**
      * @psalm-mutation-free
      */
-    public function forWrite(Selectable $write, Selectable ...$writes): Watch
+    public function forWrite(Writable $write, Writable ...$writes): Watch
     {
         /** @psalm-suppress ImpureMethodCall */
         $this->logger->debug(
@@ -68,7 +70,7 @@ final class Logger implements Watch
     /**
      * @psalm-mutation-free
      */
-    public function unwatch(Selectable $stream): Watch
+    public function unwatch(Stream $stream): Watch
     {
         /** @psalm-suppress ImpureMethodCall */
         $this->logger->debug('Removing a stream from watch list');

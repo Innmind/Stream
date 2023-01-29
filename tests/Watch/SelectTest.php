@@ -102,7 +102,7 @@ class SelectTest extends TestCase
             ->expects($this->exactly(2))
             ->method('resource')
             ->willReturn($writeSocket = \stream_socket_client('unix:///tmp/write.sock'));
-        $select = Select::timeoutAfter(new ElapsedPeriod(1000))
+        $select = Select::timeoutAfter(new ElapsedPeriod(0))
             ->forRead($read)
             ->forWrite($write);
         $this->assertSame(3, \fwrite($readSocket, 'foo'));

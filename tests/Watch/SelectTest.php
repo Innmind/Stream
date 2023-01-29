@@ -96,12 +96,12 @@ class SelectTest extends TestCase
         $read
             ->expects($this->exactly(2))
             ->method('resource')
-            ->willReturn($readSocket = \stream_socket_client('unix:///tmp/read.sock'));
+            ->willReturn($readSocket = \tmpfile());
         $write = $this->createMock(Writable::class);
         $write
             ->expects($this->exactly(2))
             ->method('resource')
-            ->willReturn($writeSocket = \stream_socket_client('unix:///tmp/write.sock'));
+            ->willReturn($writeSocket = \tmpfile());
         $select = Select::timeoutAfter(new ElapsedPeriod(0))
             ->forRead($read)
             ->forWrite($write);

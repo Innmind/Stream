@@ -8,4 +8,10 @@ namespace Innmind\Stream;
  */
 final class PositionNotSeekable
 {
+    /**
+     * @internal
+     */
+    public function __construct()
+    {
+    }
 }

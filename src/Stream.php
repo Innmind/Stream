@@ -17,6 +17,13 @@ use Innmind\Immutable\{
 interface Stream
 {
     /**
+     * @psalm-mutation-free
+     *
+     * @return resource stream
+     */
+    public function resource();
+
+    /**
      * It returns a SideEffect instead of the stream on the right hand size
      * because you should no longer use the stream once it's closed
      *

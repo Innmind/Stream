@@ -14,6 +14,9 @@ final class DataPartiallyWritten
     private Str $data;
     private int $written;
 
+    /**
+     * @internal
+     */
     public function __construct(Str $data, int $written)
     {
         $suggestion = '';

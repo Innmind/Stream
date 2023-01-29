@@ -8,4 +8,10 @@ namespace Innmind\Stream;
  */
 final class FailedToCloseStream
 {
+    /**
+     * @internal
+     */
+    public function __construct()
+    {
+    }
 }

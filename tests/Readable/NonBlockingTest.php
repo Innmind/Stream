@@ -7,7 +7,6 @@ use Innmind\Stream\{
     Readable\NonBlocking,
     Readable\Stream,
     Readable,
-    Selectable,
     Stream\Position,
     Stream\Position\Mode,
     Stream\Size
@@ -25,7 +24,6 @@ class NonBlockingTest extends TestCase
         $stream = NonBlocking::of(Stream::of(\tmpfile()));
 
         $this->assertInstanceOf(Readable::class, $stream);
-        $this->assertInstanceOf(Selectable::class, $stream);
     }
 
     public function testResource()

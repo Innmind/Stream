@@ -7,7 +7,6 @@ use Innmind\Stream\{
     Stream as StreamInterface,
     Stream\Stream as Base,
     Readable,
-    Selectable,
     Stream\Size,
     Stream\Position,
     Stream\Position\Mode
@@ -19,7 +18,7 @@ use Innmind\Immutable\{
     Either,
 };
 
-final class Stream implements Readable, Selectable
+final class Stream implements Readable
 {
     /** @var resource */
     private $resource;

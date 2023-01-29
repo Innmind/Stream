@@ -4,7 +4,7 @@
 
 ### Added
 
-- `Innmind\Stream\Capabilities` (implemented by alreayd existing `Innmind\Stream\Streams`)
+- `Innmind\Stream\Capabilities` (implemented by already existing `Innmind\Stream\Streams`)
 - `Innmind\Stream\Streams::fromAmbientAuthority()`
 - `Innmind\Stream\Stream::resource(): resource`
 

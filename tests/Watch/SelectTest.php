@@ -105,8 +105,8 @@ class SelectTest extends TestCase
         $select = Select::timeoutAfter(new ElapsedPeriod(1000))
             ->forRead($read)
             ->forWrite($write);
-        \fwrite($readSocket, 'foo');
-        \fwrite($writeSocket, 'foo');
+        $this->assertSame(3, \fwrite($readSocket, 'foo'));
+        $this->assertSame(3, \fwrite($writeSocket, 'foo'));
 
         $ready = $select()->match(
             static fn($ready) => $ready,

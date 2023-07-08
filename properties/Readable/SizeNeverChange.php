@@ -3,14 +3,21 @@ declare(strict_types = 1);
 
 namespace Properties\Innmind\Stream\Readable;
 
-use Innmind\BlackBox\Property;
-use PHPUnit\Framework\Assert;
+use Innmind\Stream\Readable;
+use Innmind\BlackBox\{
+    Property,
+    Set,
+    Runner\Assert,
+};
 
+/**
+ * @implements Property<Readable>
+ */
 final class SizeNeverChange implements Property
 {
-    public function name(): string
+    public static function any(): Set
     {
-        return 'Size never change';
+        return Set\Elements::of(new self);
     }
 
     public function applicableTo(object $stream): bool
@@ -21,9 +28,9 @@ final class SizeNeverChange implements Property
         );
     }
 
-    public function ensureHeldBy(object $stream): object
+    public function ensureHeldBy(Assert $assert, object $stream): object
     {
-        Assert::assertSame(
+        $assert->same(
             $stream->size()->match(
                 static fn($size) => $size->toInt(),
                 static fn() => null,

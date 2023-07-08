@@ -3,14 +3,21 @@ declare(strict_types = 1);
 
 namespace Properties\Innmind\Stream\Readable;
 
-use Innmind\BlackBox\Property;
-use PHPUnit\Framework\Assert;
+use Innmind\Stream\Readable;
+use Innmind\BlackBox\{
+    Property,
+    Set,
+    Runner\Assert,
+};
 
+/**
+ * @implements Property<Readable>
+ */
 final class ReadingAboveSizeFlagStreamEnd implements Property
 {
-    public function name(): string
+    public static function any(): Set
     {
-        return 'Reading above size flag stream end';
+        return Set\Elements::of(new self);
     }
 
     public function applicableTo(object $stream): bool
@@ -21,7 +28,7 @@ final class ReadingAboveSizeFlagStreamEnd implements Property
         );
     }
 
-    public function ensureHeldBy(object $stream): object
+    public function ensureHeldBy(Assert $assert, object $stream): object
     {
         $stream->read(
             $stream
@@ -32,7 +39,7 @@ final class ReadingAboveSizeFlagStreamEnd implements Property
                     static fn() => 0,
                 ),
         );
-        Assert::assertTrue($stream->end());
+        $assert->true($stream->end());
 
         return $stream;
     }

@@ -17,17 +17,9 @@ use Innmind\Immutable\{
     SideEffect,
 };
 use PHPUnit\Framework\TestCase;
-use Innmind\BlackBox\{
-    PHPUnit\BlackBox,
-    Set,
-};
-use Fixtures\Innmind\Stream\Readable as Fixture;
-use Properties\Innmind\Stream\Readable as PReadable;
 
 class StreamTest extends TestCase
 {
-    use BlackBox;
-
     public function testInterface()
     {
         $stream = Stream::of(\tmpfile());
@@ -301,45 +293,5 @@ class StreamTest extends TestCase
             static fn($value) => $value,
             static fn() => null,
         ));
-    }
-
-    /**
-     * @dataProvider properties
-     */
-    public function testHoldProperty($property)
-    {
-        $this
-            ->forAll(
-                $property,
-                new Set\Either(
-                    Fixture::any(),
-                    Fixture::closed(),
-                ),
-            )
-            ->filter(static function($property, $stream) {
-                return $property->applicableTo($stream);
-            })
-            ->then(static function($property, $stream) {
-                $property->ensureHeldBy($stream);
-            });
-    }
-
-    public function testHoldProperties()
-    {
-        $this
-            ->forAll(
-                PReadable::properties(),
-                Fixture::any(),
-            )
-            ->then(static function($properties, $stream) {
-                $properties->ensureHeldBy($stream);
-            });
-    }
-
-    public function properties(): iterable
-    {
-        foreach (PReadable::list() as $property) {
-            yield [$property];
-        }
     }
 }

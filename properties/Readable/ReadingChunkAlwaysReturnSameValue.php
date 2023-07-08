@@ -3,10 +3,19 @@ declare(strict_types = 1);
 
 namespace Properties\Innmind\Stream\Readable;
 
-use Innmind\Stream\Stream\Position\Mode;
-use Innmind\BlackBox\Property;
-use PHPUnit\Framework\Assert;
+use Innmind\Stream\{
+    Readable,
+    Stream\Position\Mode,
+};
+use Innmind\BlackBox\{
+    Property,
+    Set,
+    Runner\Assert,
+};
 
+/**
+ * @implements Property<Readable>
+ */
 final class ReadingChunkAlwaysReturnSameValue implements Property
 {
     private int $chunk;
@@ -16,9 +25,9 @@ final class ReadingChunkAlwaysReturnSameValue implements Property
         $this->chunk = $chunk;
     }
 
-    public function name(): string
+    public static function any(): Set
     {
-        return "Reading chunk {$this->chunk} always return the same value";
+        return Set\Integers::between(1, 100)->map(static fn($chunk) => new self($chunk));
     }
 
     public function applicableTo(object $stream): bool
@@ -33,26 +42,26 @@ final class ReadingChunkAlwaysReturnSameValue implements Property
                 );
     }
 
-    public function ensureHeldBy(object $stream): object
+    public function ensureHeldBy(Assert $assert, object $stream): object
     {
         $position = $stream->position();
         $chunk = $stream->read($this->chunk)->match(
             static fn($value) => $value->toString(),
             static fn() => null,
         );
-        Assert::assertIsString($chunk);
+        $assert->string($chunk);
         $stream->seek($position, Mode::fromStart);
-        Assert::assertSame(
+        $assert->same(
             $chunk,
             $stream->read($this->chunk)->match(
                 static fn($value) => $value->toString(),
                 static fn() => null,
             ),
         );
-        Assert::assertNotEmpty(
-            $chunk,
-            "Position at {$position->toInt()}",
-        );
+        $assert
+            ->string($chunk)
+            ->not()
+            ->empty("Position at {$position->toInt()}");
 
         return $stream;
     }

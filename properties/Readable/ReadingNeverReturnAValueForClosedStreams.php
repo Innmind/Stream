@@ -3,14 +3,21 @@ declare(strict_types = 1);
 
 namespace Properties\Innmind\Stream\Readable;
 
-use Innmind\BlackBox\Property;
-use PHPUnit\Framework\Assert;
+use Innmind\Stream\Readable;
+use Innmind\BlackBox\{
+    Property,
+    Set,
+    Runner\Assert,
+};
 
+/**
+ * @implements Property<Readable>
+ */
 final class ReadingNeverReturnAValueForClosedStreams implements Property
 {
-    public function name(): string
+    public static function any(): Set
     {
-        return 'Reading never return a value for closed streams';
+        return Set\Elements::of(new self);
     }
 
     public function applicableTo(object $stream): bool
@@ -18,9 +25,9 @@ final class ReadingNeverReturnAValueForClosedStreams implements Property
         return $stream->closed();
     }
 
-    public function ensureHeldBy(object $stream): object
+    public function ensureHeldBy(Assert $assert, object $stream): object
     {
-        Assert::assertNull($stream->read()->match(
+        $assert->null($stream->read()->match(
             static fn($value) => $value,
             static fn() => null,
         ));

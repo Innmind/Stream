@@ -3,15 +3,22 @@ declare(strict_types = 1);
 
 namespace Properties\Innmind\Stream\Readable;
 
+use Innmind\Stream\Readable;
 use Innmind\Immutable\SideEffect;
-use Innmind\BlackBox\Property;
-use PHPUnit\Framework\Assert;
+use Innmind\BlackBox\{
+    Property,
+    Set,
+    Runner\Assert,
+};
 
+/**
+ * @implements Property<Readable>
+ */
 final class Close implements Property
 {
-    public function name(): string
+    public static function any(): Set
     {
-        return 'Close';
+        return Set\Elements::of(new self);
     }
 
     public function applicableTo(object $stream): bool
@@ -19,16 +26,15 @@ final class Close implements Property
         return true;
     }
 
-    public function ensureHeldBy(object $stream): object
+    public function ensureHeldBy(Assert $assert, object $stream): object
     {
-        Assert::assertInstanceOf(
-            SideEffect::class,
-            $stream->close()->match(
+        $assert
+            ->object($stream->close()->match(
                 static fn($value) => $value,
                 static fn() => null,
-            ),
-        );
-        Assert::assertTrue($stream->closed());
+            ))
+            ->instance(SideEffect::class);
+        $assert->true($stream->closed());
 
         return $stream;
     }

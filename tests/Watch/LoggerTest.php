@@ -84,8 +84,7 @@ class LoggerTest extends TestCase
         $this
             ->forAll(Set\Sequence::of(
                 Set\Elements::of($this->createMock(Readable::class)),
-                Set\Integers::between(1, 10),
-            ))
+            )->between(1, 10))
             ->then(function($streams) {
                 $inner = $this->createMock(Watch::class);
                 $inner
@@ -105,13 +104,16 @@ class LoggerTest extends TestCase
                 $logger
                     ->expects($this->exactly(2))
                     ->method('debug')
-                    ->withConsecutive(
+                    ->willReturnCallback(static fn($message, $context) => match ([$message, $context]) {
                         [
                             'Adding {count} streams to watch for read',
                             ['count' => \count($streams)],
                         ],
-                        ['Streams ready: {read} for read, {write} for write'],
-                    );
+                        [
+                            'Streams ready: {read} for read, {write} for write',
+                            ['read' => 0, 'write' => 0],
+                        ] => null,
+                    });
                 $watch = Logger::psr($inner, $logger);
                 $watch2 = $watch->forRead(...$streams);
 
@@ -129,8 +131,7 @@ class LoggerTest extends TestCase
         $this
             ->forAll(Set\Sequence::of(
                 Set\Elements::of($this->createMock(Writable::class)),
-                Set\Integers::between(1, 10),
-            ))
+            )->between(1, 10))
             ->then(function($streams) {
                 $inner = $this->createMock(Watch::class);
                 $inner
@@ -150,13 +151,16 @@ class LoggerTest extends TestCase
                 $logger
                     ->expects($this->exactly(2))
                     ->method('debug')
-                    ->withConsecutive(
+                    ->willReturnCallback(static fn($message, $context) => match ([$message, $context]) {
                         [
                             'Adding {count} streams to watch for write',
                             ['count' => \count($streams)],
                         ],
-                        ['Streams ready: {read} for read, {write} for write'],
-                    );
+                        [
+                            'Streams ready: {read} for read, {write} for write',
+                            ['read' => 0, 'write' => 0],
+                        ] => null,
+                    });
                 $watch = Logger::psr($inner, $logger);
                 $watch2 = $watch->forWrite(...$streams);
 
@@ -189,10 +193,10 @@ class LoggerTest extends TestCase
         $logger
             ->expects($this->exactly(2))
             ->method('debug')
-            ->withConsecutive(
-                ['Removing a stream from watch list'],
-                ['Streams ready: {read} for read, {write} for write'],
-            );
+            ->willReturnCallback(static fn($message) => match ($message) {
+                'Removing a stream from watch list',
+                'Streams ready: {read} for read, {write} for write' => null,
+            });
         $watch = Logger::psr($inner, $logger);
         $watch2 = $watch->unwatch($stream);
 

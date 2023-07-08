@@ -3,14 +3,21 @@ declare(strict_types = 1);
 
 namespace Properties\Innmind\Stream\Readable;
 
-use Innmind\BlackBox\Property;
-use PHPUnit\Framework\Assert;
+use Innmind\Stream\Readable;
+use Innmind\BlackBox\{
+    Property,
+    Set,
+    Runner\Assert,
+};
 
+/**
+ * @implements Property<Readable>
+ */
 final class PositionCanNeverBeHigherThanSize implements Property
 {
-    public function name(): string
+    public static function any(): Set
     {
-        return 'Position can never be higher than size';
+        return Set\Elements::of(new self);
     }
 
     public function applicableTo(object $stream): bool
@@ -18,15 +25,14 @@ final class PositionCanNeverBeHigherThanSize implements Property
         return true;
     }
 
-    public function ensureHeldBy(object $stream): object
+    public function ensureHeldBy(Assert $assert, object $stream): object
     {
-        Assert::assertLessThanOrEqual(
-            $stream->size()->match(
+        $assert
+            ->number($stream->position()->toInt())
+            ->lessThanOrEqual($stream->size()->match(
                 static fn($size) => $size->toInt(),
                 static fn() => 0,
-            ),
-            $stream->position()->toInt(),
-        );
+            ));
 
         return $stream;
     }

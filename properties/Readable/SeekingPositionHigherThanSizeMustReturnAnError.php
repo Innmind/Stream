@@ -4,12 +4,19 @@ declare(strict_types = 1);
 namespace Properties\Innmind\Stream\Readable;
 
 use Innmind\Stream\{
+    Readable,
     Stream\Position,
     PositionNotSeekable,
 };
-use Innmind\BlackBox\Property;
-use PHPUnit\Framework\Assert;
+use Innmind\BlackBox\{
+    Property,
+    Set,
+    Runner\Assert,
+};
 
+/**
+ * @implements Property<Readable>
+ */
 final class SeekingPositionHigherThanSizeMustReturnAnError implements Property
 {
     private int $position;
@@ -19,9 +26,9 @@ final class SeekingPositionHigherThanSizeMustReturnAnError implements Property
         $this->position = $position;
     }
 
-    public function name(): string
+    public static function any(): Set
     {
-        return "Seeking position {$this->position} above stream size must return an error";
+        return Set\Integers::above(0)->map(static fn($position) => new self($position));
     }
 
     public function applicableTo(object $stream): bool
@@ -32,7 +39,7 @@ final class SeekingPositionHigherThanSizeMustReturnAnError implements Property
         );
     }
 
-    public function ensureHeldBy(object $stream): object
+    public function ensureHeldBy(Assert $assert, object $stream): object
     {
         $current = $stream->position()->toInt();
         $error = $stream->seek(
@@ -52,11 +59,10 @@ final class SeekingPositionHigherThanSizeMustReturnAnError implements Property
             static fn($e) => $e,
         );
 
-        Assert::assertInstanceOf(
-            PositionNotSeekable::class,
-            $error,
-        );
-        Assert::assertSame($current, $stream->position()->toInt());
+        $assert
+            ->object($error)
+            ->instance(PositionNotSeekable::class);
+        $assert->same($current, $stream->position()->toInt());
 
         return $stream;
     }

@@ -68,7 +68,7 @@ final class Readable
      */
     private static function alterPosition(Set $streams): Set
     {
-        return new Set\Either(
+        return Set\Either::any(
             $streams,
             Set\Composite::mutable(
                 static function(Stream $stream, int $position): Stream {

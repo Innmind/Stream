@@ -40,7 +40,7 @@ class SizeTest extends TestCase
         $this->assertSame(5_629_499_534_213_120, Size\Unit::petabytes->times(5));
     }
 
-    public function cases(): array
+    public static function cases(): array
     {
         return [
             ['512B', 512],

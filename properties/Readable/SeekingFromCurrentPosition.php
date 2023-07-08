@@ -3,10 +3,19 @@ declare(strict_types = 1);
 
 namespace Properties\Innmind\Stream\Readable;
 
-use Innmind\Stream\Stream\Position;
-use Innmind\BlackBox\Property;
-use PHPUnit\Framework\Assert;
+use Innmind\Stream\{
+    Readable,
+    Stream\Position,
+};
+use Innmind\BlackBox\{
+    Property,
+    Set,
+    Runner\Assert,
+};
 
+/**
+ * @implements Property<Readable>
+ */
 final class SeekingFromCurrentPosition implements Property
 {
     private int $position;
@@ -16,9 +25,9 @@ final class SeekingFromCurrentPosition implements Property
         $this->position = $position;
     }
 
-    public function name(): string
+    public static function any(): Set
     {
-        return "Seeking {$this->position} from current position";
+        return Set\Integers::between(1, 100)->map(static fn($position) => new self($position));
     }
 
     public function applicableTo(object $stream): bool
@@ -33,10 +42,10 @@ final class SeekingFromCurrentPosition implements Property
                 );
     }
 
-    public function ensureHeldBy(object $stream): object
+    public function ensureHeldBy(Assert $assert, object $stream): object
     {
         $current = $stream->position()->toInt();
-        Assert::assertSame(
+        $assert->same(
             $stream,
             $stream->seek(
                 new Position($this->position),
@@ -46,10 +55,9 @@ final class SeekingFromCurrentPosition implements Property
                 static fn() => null,
             ),
         );
-        Assert::assertGreaterThan(
-            $current,
-            $stream->position()->toInt(),
-        );
+        $assert
+            ->number($stream->position()->toInt())
+            ->greaterThan($current);
 
         return $stream;
     }

@@ -1,5 +1,11 @@
 # Changelog
 
+## 4.2.0 - 2023-09-16
+
+### Added
+
+- Support for `innmind/immutable` `5`
+
 ## 4.1.0 - 2023-07-08
 
 ### Changed

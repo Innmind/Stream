@@ -16,7 +16,7 @@
     },
     "require": {
         "php": "~8.2",
-        "innmind/immutable": "~4.15",
+        "innmind/immutable": "~4.15|~5.0",
         "innmind/time-continuum": "~3.3",
         "innmind/url": "~4.2",
         "psr/log": "~3.0"
